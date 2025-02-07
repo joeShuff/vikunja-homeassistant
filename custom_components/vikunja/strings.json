@@ -1,0 +1,17 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Vikunja",
+        "description": "Please provide your URL and API Key to access your Vikunja instance.",
+        "data": {
+          "api_key": "[%key:common::config_flow::data::api_key%]",
+          "url": "[%key:common::config_flow::data::url%]"
+        },
+        "errors": {
+          "invalid_url": "The base URL is invalid. It must start with http or https."
+        }
+      }
+    }
+  }
+}
