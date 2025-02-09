@@ -27,42 +27,50 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         """Fetch data from Vikunja API."""
-        result = {
-            DATA_PROJECTS_KEY: {},
-            DATA_TASKS_KEY: {}
-        }
-
         try:
             async with async_timeout.timeout(10):
                 LOGGER.info("Fetching projects from Vikunja API...")
                 projects = await self._vikunja_api.get_projects()
                 LOGGER.info(f"Fetched {len(projects)} projects.")
 
-                current_projects = set(self.data[DATA_PROJECTS_KEY].keys()) if self.data else None
-                current_tasks = set(self.data[DATA_TASKS_KEY].keys()) if self.data else None
+                # Get current projects and tasks, defaulting to empty sets
+                has_data = self.data is not None
 
+                current_projects = set(self.data[DATA_PROJECTS_KEY].keys()) if self.data else set()
+                current_tasks = set(self.data[DATA_TASKS_KEY].keys()) if self.data else set()
+
+                result = {DATA_PROJECTS_KEY: {}, DATA_TASKS_KEY: {}}
                 tasks = {}
+
                 for project in projects:
                     result[DATA_PROJECTS_KEY][project.id] = project
                     LOGGER.info(f"Fetching tasks from Vikunja API for project {project.id}...")
                     new_tasks = await self._vikunja_api.get_tasks(project.id)
 
                     for task in new_tasks:
-                        # Check if the task is already in the tasks list based on its ID
-                        if not any(existing_task_id == task.id for existing_task_id in tasks.keys()):
-                            tasks[task.id] = task  # Add the task if it's not already in the list
+                        if task.id not in tasks.keys():
+                            tasks[task.id] = task
 
                 LOGGER.info(f"Fetched {len(tasks)} tasks.")
                 result[DATA_TASKS_KEY] = tasks
 
+                # Calculate new and removed items
                 new_tasks = set(result[DATA_TASKS_KEY].keys()) - current_tasks
+                removed_tasks = current_tasks - set(tasks)
                 new_projects = set(result[DATA_PROJECTS_KEY].keys()) - current_projects
 
-                # Reload the entry if there is new data so the new devices and entities get created
-                if current_projects is not None and current_tasks is not None:
-                    if current_tasks != new_tasks or current_projects != new_projects:
-                        LOGGER.info("Change detected so reloading entry")
-                        self._hass.config_entries.async_schedule_reload(self._config_id)
+                # Reload only if new tasks or projects exist
+                if has_data and (new_tasks or new_projects):
+                    LOGGER.info("New tasks or projects detected, reloading entry")
+                    self._hass.config_entries.async_schedule_reload(self._config_id)
+
+                # Remove deleted tasks
+                # if removed_tasks:
+                #     for task_id in removed_tasks:
+                #         entity_id = f"sensor.vikunja_task_{task_id}"  # Adjust based on entity type
+                #         if entity_id in self._hass.states.async_entity_ids():
+                #             await self._hass.states.async_remove(entity_id)
+                #             LOGGER.info(f"Removed deleted Vikunja task: {entity_id}")
 
                 return result
         except Exception as e:
