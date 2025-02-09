@@ -33,7 +33,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
     for task_id in tasks:
         LOGGER.info(f"Task is {task_id}")
-        entities.extend(get_sensors_for_task(coordinator, vikunja_api.base_url, task_id))
+        entities.extend(get_sensors_for_task(coordinator, vikunja_api.web_ui_link, task_id))
 
     if not entities:
         LOGGER.warning("No entities created")

@@ -1,8 +1,11 @@
 import logging
+
+import httpx
 import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
+from pyvikunja.api import VikunjaAPI
 
 from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, CONF_SECS_INTERVAL
 
@@ -21,9 +24,12 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             token = user_input[CONF_TOKEN]
             secs_interval = user_input[CONF_SECS_INTERVAL]
 
-            # TODO: Validate the credentials with the Vikunja API
-            if not base_url.startswith("http"):
-                errors["base"] = "invalid_url"
+            api = VikunjaAPI(base_url, token)
+
+            try:
+                await api.ping()
+            except httpx.HTTPError as e:
+                errors['base'] = f"API Error: {e}"
 
             if not errors:
                 return self.async_create_entry(

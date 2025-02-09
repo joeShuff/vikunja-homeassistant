@@ -35,7 +35,7 @@ class VikunjaTaskEntity(CoordinatorEntity):
             name=self.name_prefix(),
             manufacturer="Vikunja",
             model="Task",
-            configuration_url=self._base_url.replace("/api/v1", "") + f"/tasks/{self.task.id}"
+            configuration_url=self._base_url + f"/tasks/{self.task.id}"
         )
 
     async def async_update(self):
