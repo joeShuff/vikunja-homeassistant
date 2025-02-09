@@ -4,9 +4,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
 
-from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN
-
-
+from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, CONF_SECS_INTERVAL
 
 
 class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -21,6 +19,7 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             base_url = user_input[CONF_BASE_URL]
             token = user_input[CONF_TOKEN]
+            secs_interval = user_input[CONF_SECS_INTERVAL]
 
             # TODO: Validate the credentials with the Vikunja API
             if not base_url.startswith("http"):
@@ -29,7 +28,7 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if not errors:
                 return self.async_create_entry(
                     title="Vikunja",
-                    data={CONF_BASE_URL: base_url, CONF_TOKEN: token},
+                    data={CONF_BASE_URL: base_url, CONF_TOKEN: token, CONF_SECS_INTERVAL: secs_interval},
                 )
 
         return self.async_show_form(
@@ -37,6 +36,7 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema({
                 vol.Required(CONF_BASE_URL): str,
                 vol.Required(CONF_TOKEN): str,
+                vol.Optional(CONF_SECS_INTERVAL, default=60): int
             }),
             errors=errors
         )

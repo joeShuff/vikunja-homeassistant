@@ -3,10 +3,10 @@ from pyvikunja.api import VikunjaAPI
 from custom_components.vikunja.sensors.TaskSensors import *
 
 
-def get_datetime_sensors_for_task(base_url, task: Task):
+def get_datetime_sensors_for_task(coordinator, base_url, task_id):
     return [
-        VikunjaTaskStartDateSensor(base_url, task),
-        VikunjaTaskEndDateSensor(base_url, task)
+        VikunjaTaskStartDateSensor(coordinator, base_url, task_id),
+        VikunjaTaskEndDateSensor(coordinator, base_url, task_id)
     ]
 
 
@@ -20,17 +20,16 @@ async def async_setup_entry(hass, entry, async_add_entities):
         return False
 
     vikunja_api: VikunjaAPI = vikunja_data["api"]
-    projects = vikunja_data["projects"]
-    tasks = vikunja_data["tasks"]
-
-    LOGGER.info(f"Found {len(projects)} projects and {len(tasks)} tasks")
+    coordinator = vikunja_data["coordinator"]
 
     # Create sensor entities
     entities = []
 
-    for task in tasks:
-        LOGGER.info(f"Task is {task}")
-        entities.extend(get_datetime_sensors_for_task(vikunja_api.base_url, task))
+    tasks = coordinator.data[DATA_TASKS_KEY].keys()
+
+    for task_id in tasks:
+        LOGGER.info(f"Task is {task_id}")
+        entities.extend(get_datetime_sensors_for_task(coordinator, vikunja_api.base_url, task_id))
 
     if not entities:
         LOGGER.warning("No entities created")
