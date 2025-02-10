@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.button import ButtonEntity
 from homeassistant.components.datetime import DateTimeEntity
@@ -106,6 +108,40 @@ class VikunjaTaskDoneSensor(VikunjaTaskEntity, BinarySensorEntity):
     @property
     def unique_id(self) -> str:
         return self.id_prefix() + "_done"
+
+
+class VikunjaTaskDueTodaySensor(VikunjaTaskEntity, BinarySensorEntity):
+    """Representation of a Vikunja Task done status sensor."""
+
+    def __init__(self, coordinator, base_url, task_id):
+        super().__init__(coordinator, base_url, task_id)
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return f"{self.name_prefix()} Due Today"
+
+    @property
+    def is_on(self):
+        """Return the state of the sensor."""
+        due_date = self.task.due_date
+        if not due_date:
+            return False  # No due date set
+
+        # Convert due_date to a datetime object
+        due_date = datetime.fromisoformat(due_date).astimezone(timezone.utc).date()
+        today = datetime.now(timezone.utc).date()
+
+        return due_date == today
+
+    @property
+    def icon(self):
+        """Icon for the sensor."""
+        return "mdi:check-circle-outline"
+
+    @property
+    def unique_id(self) -> str:
+        return self.id_prefix() + "_due_today"
 
 
 class VikunjaTaskDueDateSensor(VikunjaTaskEntity, SensorEntity):

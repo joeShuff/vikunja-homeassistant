@@ -27,6 +27,11 @@ async def async_setup_entry(hass, entry):
     coordinator = VikunjaDataUpdateCoordinator(hass, entry.entry_id, vikunja_api, secs_interval)
     await coordinator.async_config_entry_first_refresh()
 
+    # Update the entry title to include the host
+    new_title = f"Vikunja ({vikunja_api.web_ui_link})"
+    if entry.title != new_title:
+        hass.config_entries.async_update_entry(entry, title=new_title)
+
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
         "api": vikunja_api,
         "coordinator": coordinator
