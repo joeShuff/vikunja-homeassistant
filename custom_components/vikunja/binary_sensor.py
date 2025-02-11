@@ -3,12 +3,13 @@ from pyvikunja.models.task import Task
 
 from custom_components.vikunja import LOGGER
 from custom_components.vikunja.const import DATA_TASKS_KEY
-from custom_components.vikunja.sensors.TaskSensors import VikunjaTaskDoneSensor
+from custom_components.vikunja.sensors.TaskSensors import VikunjaTaskDoneSensor, VikunjaTaskOverdueSensor
 
 
 def get_binary_sensors_for_task(coordinator, base_url, task_id):
     return [
         VikunjaTaskDoneSensor(coordinator, base_url, task_id),
+        VikunjaTaskOverdueSensor(coordinator, base_url, task_id)
     ]
 
 

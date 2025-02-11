@@ -14,6 +14,20 @@ This Home Assistant integration allows you to sync tasks from your [Vikunja](htt
 
 ### Option 1: Install via HACS (Home Assistant Community Store)
 
+#### Add Repository
+
+1. Open HACS. Click the ... in the top right and "Custom Repositories" 
+
+![hacs step 1](art/hacs_step_1.png)
+2. Add the link to this repository and select "Integration" from the dropdown.
+
+![hacs step 2](art/hacs_step_2.png)
+3. Then install Vikunja integration.
+
+![hacs step 3](art/hacs_step_3.png)
+
+#### Install Integration
+
 1. Open Home Assistant and go to **Settings** > **Integrations**.
 2. Click the **+** icon in the bottom right corner to add an integration.
 3. Search for **Vikunja** in the list and select it.

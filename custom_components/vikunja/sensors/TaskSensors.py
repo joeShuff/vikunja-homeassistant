@@ -4,6 +4,7 @@ from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.button import ButtonEntity
 from homeassistant.components.datetime import DateTimeEntity
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from pyvikunja.models.enum.task_priority import Priority
 
 from custom_components.vikunja.sensors.vikunja_task_entity import *
 
@@ -110,8 +111,8 @@ class VikunjaTaskDoneSensor(VikunjaTaskEntity, BinarySensorEntity):
         return self.id_prefix() + "_done"
 
 
-class VikunjaTaskDueTodaySensor(VikunjaTaskEntity, BinarySensorEntity):
-    """Representation of a Vikunja Task done status sensor."""
+class VikunjaTaskOverdueSensor(VikunjaTaskEntity, BinarySensorEntity):
+    """Representation of a Vikunja Task overdue status sensor."""
 
     def __init__(self, coordinator, base_url, task_id):
         super().__init__(coordinator, base_url, task_id)
@@ -119,7 +120,7 @@ class VikunjaTaskDueTodaySensor(VikunjaTaskEntity, BinarySensorEntity):
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{self.name_prefix()} Due Today"
+        return f"{self.name_prefix()} Overdue"
 
     @property
     def is_on(self):
@@ -129,10 +130,9 @@ class VikunjaTaskDueTodaySensor(VikunjaTaskEntity, BinarySensorEntity):
             return False  # No due date set
 
         # Convert due_date to a datetime object
-        due_date = datetime.fromisoformat(due_date).astimezone(timezone.utc).date()
-        today = datetime.now(timezone.utc).date()
+        now = datetime.now()
 
-        return due_date == today
+        return due_date <= now
 
     @property
     def icon(self):
@@ -141,7 +141,7 @@ class VikunjaTaskDueTodaySensor(VikunjaTaskEntity, BinarySensorEntity):
 
     @property
     def unique_id(self) -> str:
-        return self.id_prefix() + "_due_today"
+        return self.id_prefix() + "_overdue"
 
 
 class VikunjaTaskDueDateSensor(VikunjaTaskEntity, SensorEntity):
@@ -204,15 +204,15 @@ class VikunjaTaskPrioritySensor(VikunjaTaskEntity, SensorEntity):
         match priority:
             case None:
                 return "None"
-            case 1:
+            case Priority.LOW:
                 return "Low"
-            case 2:
+            case Priority.MEDIUM:
                 return "Medium"
-            case 3:
+            case Priority.HIGH:
                 return "High"
-            case 4:
+            case Priority.URGENT:
                 return "Urgent"
-            case 5:
+            case Priority.DO_IT_NOW:
                 return "DO IT NOW"
             case _:
                 return "Unknown"
