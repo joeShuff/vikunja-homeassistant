@@ -15,7 +15,9 @@ PLATFORMS = [
     Platform.DATETIME,
     Platform.BUTTON,
     Platform.SELECT,
-    Platform.NUMBER]
+    Platform.NUMBER,
+    Platform.SWITCH
+]
 
 
 async def async_setup_entry(hass, entry):

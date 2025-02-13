@@ -1,18 +1,20 @@
 from datetime import timedelta
 from enum import Enum
+from typing import Optional
 
 from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.components.select import SelectEntity
+from homeassistant.components.switch import SwitchEntity
 from pyvikunja.models.enum.repeat_mode import RepeatMode
 from pyvikunja.models.task import Task
 
 from custom_components.vikunja.sensors.vikunja_task_entity import VikunjaTaskEntity
 
 
-def get_repeat_info_for_task(task: Task) -> tuple['RepeatUnit', int]:
+def get_repeat_info_for_task(task: Task) -> tuple[Optional['RepeatUnit'], Optional[int]]:
     """Returns the repeat unit and repeat interval from a Task."""
     if task.repeat_after is None or task.repeat_after.total_seconds() <= 0:
-        return RepeatUnit.DAYS, 1  # Default to 1 day if not set
+        return None, None
 
     unit = RepeatUnit.from_seconds(int(task.repeat_after.total_seconds()))
     scaled_value = int(int(task.repeat_after.total_seconds()) / unit.seconds)
@@ -60,6 +62,39 @@ REPEAT_MODE_OPTIONS = {
 }
 
 
+class VikunjaRepeatModeEnabledSwitch(VikunjaTaskEntity, SwitchEntity):
+
+    def __init__(self, coordinator, base_url, task_id):
+        super().__init__(coordinator, base_url, task_id)
+
+    @property
+    def is_on(self) -> bool | None:
+        return self.task.repeat_enabled
+
+    async def async_turn_on(self, **kwargs):
+        """Turn on repeat mode."""
+        await self.task.set_repeating_enabled(True)  # Update task to enable repeat mode
+        await self.async_update()
+
+    async def async_turn_off(self, **kwargs):
+        """Turn off repeat mode."""
+        await self.task.set_repeating_enabled(False)  # Update task to disable repeat mode
+        await self.async_update()
+
+    @property
+    def name(self):
+        return f"{self.name_prefix()} Repeat Mode"
+
+    @property
+    def icon(self):
+        """Icon for the sensor."""
+        return "mdi:repeat"
+
+    @property
+    def unique_id(self) -> str:
+        return self.id_prefix() + "_repeat_mode"
+
+
 class VikunjaRepeatModeSelect(VikunjaTaskEntity, SelectEntity):
     """Select entity for Vikunja task repeat mode."""
 
@@ -75,6 +110,10 @@ class VikunjaRepeatModeSelect(VikunjaTaskEntity, SelectEntity):
     def state(self):
         """Return the state of the sensor."""
         return REPEAT_MODE_OPTIONS.get(self.task.repeat_mode, "None")
+
+    @property
+    def available(self) -> bool:
+        return self.task.repeat_enabled
 
     async def async_select_option(self, option: str):
         """Handle user selection of a new repeat mode."""
@@ -107,6 +146,9 @@ class VikunjaRepeatIntervalSizeSensor(VikunjaTaskEntity, NumberEntity):
         # Get the tasks current repeat unit and value
         current_unit, current_value = get_repeat_info_for_task(self.task)
 
+        if current_unit is None or current_value is None:
+            return None
+
         # Calculate the new repeat interval with the current value * new unit scale
         # e.g. 4 Days -> Change 4 to 8 -> calculate 8 * seconds in a day
         new_value = value * current_unit.seconds
@@ -138,6 +180,10 @@ class VikunjaRepeatIntervalSizeSensor(VikunjaTaskEntity, NumberEntity):
     def unit_of_measurement(self):
         """Return the unit of measurement of the sensor."""
         unit, scaled_value = get_repeat_info_for_task(self.task)
+
+        if unit is None or scaled_value is None:
+            return None
+
         return unit.display.lower()
 
     @property
@@ -146,6 +192,9 @@ class VikunjaRepeatIntervalSizeSensor(VikunjaTaskEntity, NumberEntity):
 
     @property
     def available(self) -> bool:
+        if not self.task.repeat_enabled:
+            return False
+
         if self.task.repeat_mode == RepeatMode.MONTHLY:
             return False
         else:
@@ -181,6 +230,10 @@ class VikunjaRepeatIntervalUnitSensor(VikunjaTaskEntity, SelectEntity):
     def state(self):
         """Return the state of the sensor."""
         unit, scaled_value = get_repeat_info_for_task(self.task)
+
+        if unit is None:
+            return None
+
         return unit.display
 
     async def async_select_option(self, option: str):
@@ -192,6 +245,9 @@ class VikunjaRepeatIntervalUnitSensor(VikunjaTaskEntity, SelectEntity):
         # Get the tasks current repeat unit and value
         current_unit, current_value = get_repeat_info_for_task(self.task)
 
+        if current_unit is None or current_value is None:
+            return None
+
         # Calculate the new repeat interval with the current value * new unit scale
         # e.g. 4 Days -> Change Days to Weeks -> calculate 4 * seconds in a week
         new_value = current_value * unit.seconds
@@ -202,6 +258,9 @@ class VikunjaRepeatIntervalUnitSensor(VikunjaTaskEntity, SelectEntity):
 
     @property
     def available(self) -> bool:
+        if not self.task.repeat_enabled:
+            return False
+
         if self.task.repeat_mode == RepeatMode.MONTHLY:
             return False
         else:
