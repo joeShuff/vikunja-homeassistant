@@ -1,12 +1,13 @@
 from datetime import timedelta
 
 import httpx
+from homeassistant import config_entries
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from pyvikunja.api import VikunjaAPI
 
-from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, LOGGER, CONF_SECS_INTERVAL
+from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, LOGGER, CONF_SECS_INTERVAL, CONF_HIDE_DONE
 from .coordinator import VikunjaDataUpdateCoordinator
 
 PLATFORMS = [
@@ -65,3 +66,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN].pop(entry.entry_id, None)
 
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def async_migrate_entry(hass, entry: config_entries.ConfigEntry) -> bool:
+    """Migrate old entry to the new version."""
+    if entry.version == 1:
+        new_data = {**entry.data, CONF_HIDE_DONE: False}  # Add default False
+        hass.config_entries.async_update_entry(entry, data=new_data, version=2)
+        return True
+    return False
