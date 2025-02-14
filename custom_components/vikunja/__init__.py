@@ -9,7 +9,15 @@ from pyvikunja.api import VikunjaAPI
 from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, LOGGER, CONF_SECS_INTERVAL
 from .coordinator import VikunjaDataUpdateCoordinator
 
-PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.DATETIME, Platform.BUTTON]
+PLATFORMS = [
+    Platform.SENSOR,
+    Platform.BINARY_SENSOR,
+    Platform.DATETIME,
+    Platform.BUTTON,
+    Platform.SELECT,
+    Platform.NUMBER,
+    Platform.SWITCH
+]
 
 
 async def async_setup_entry(hass, entry):

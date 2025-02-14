@@ -41,3 +41,7 @@ class VikunjaTaskEntity(CoordinatorEntity):
     async def async_update(self):
         """Request an update from the coordinator."""
         await self._coordinator.async_request_refresh()
+
+    async def update_task(self):
+        """Update the coordinator's stored task data and trigger an update."""
+        self._coordinator.async_update_listeners()
