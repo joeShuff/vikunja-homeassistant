@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "documentation": "https://github.com/joeShuff/vikunja-homeassistant",
   "codeowners": ["@joeShuff"],
-  "requirements": ["pyvikunja==0.11"],
+  "requirements": ["pyvikunja==0.14"],
   "config_flow": true,
   "integration_type": "service",
   "iot_class": "local_polling"

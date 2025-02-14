@@ -8,6 +8,7 @@ from homeassistant.components.switch import SwitchEntity
 from pyvikunja.models.enum.repeat_mode import RepeatMode
 from pyvikunja.models.task import Task
 
+from custom_components.vikunja import LOGGER
 from custom_components.vikunja.sensors.vikunja_task_entity import VikunjaTaskEntity
 
 
@@ -74,12 +75,12 @@ class VikunjaRepeatModeEnabledSwitch(VikunjaTaskEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs):
         """Turn on repeat mode."""
         await self.task.set_repeating_enabled(True)  # Update task to enable repeat mode
-        await self.async_update()
+        await self.update_task()
 
     async def async_turn_off(self, **kwargs):
         """Turn off repeat mode."""
         await self.task.set_repeating_enabled(False)  # Update task to disable repeat mode
-        await self.async_update()
+        await self.update_task()
 
     @property
     def name(self):
@@ -119,7 +120,7 @@ class VikunjaRepeatModeSelect(VikunjaTaskEntity, SelectEntity):
         """Handle user selection of a new repeat mode."""
         mode_value = next((k for k, v in REPEAT_MODE_OPTIONS.items() if v == option), None)
         await self.task.set_repeating_interval(mode=RepeatMode(mode_value))
-        await self.async_update()
+        await self.update_task()
 
     @property
     def name(self):
@@ -155,7 +156,7 @@ class VikunjaRepeatIntervalSizeSensor(VikunjaTaskEntity, NumberEntity):
 
         # Send update
         await self.task.set_repeating_interval(interval=timedelta(seconds=new_value))
-        await self.async_update()
+        await self.update_task()
 
     @property
     def name(self):
@@ -254,7 +255,7 @@ class VikunjaRepeatIntervalUnitSensor(VikunjaTaskEntity, SelectEntity):
 
         # Send update
         await self.task.set_repeating_interval(interval=timedelta(seconds=new_value))
-        await self.async_update()
+        await self.update_task()
 
     @property
     def available(self) -> bool:

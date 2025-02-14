@@ -242,7 +242,7 @@ class VikunjaTaskStartDateSensor(VikunjaTaskEntity, DateTimeEntity):
     async def async_set_value(self, value):
         LOGGER.info(f"Setting {self.name} to {value}")
         await self.task.set_start_date(value)
-        await self.async_update()
+        await self.update_task()
 
     @property
     def unique_id(self) -> str:
@@ -273,7 +273,7 @@ class VikunjaTaskEndDateSensor(VikunjaTaskEntity, DateTimeEntity):
     async def async_set_value(self, value):
         LOGGER.info(f"Setting {self.name} to {value}")
         await self.task.set_end_date(value)
-        await self.async_update()
+        await self.update_task()
 
     @property
     def unique_id(self) -> str:
@@ -291,7 +291,7 @@ class VikunjaTaskCompleteButton(VikunjaTaskEntity, ButtonEntity):
         LOGGER.info(f"Marking task {self.task.title} as done...")
         await self.task.mark_as_done()  # Mark task as done via API
 
-        await self.async_update()
+        await self.update_task()
 
     @property
     def name(self):
