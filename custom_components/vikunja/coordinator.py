@@ -7,6 +7,7 @@ from pyvikunja.api import VikunjaAPI
 
 from custom_components.vikunja import LOGGER
 from custom_components.vikunja.const import DATA_PROJECTS_KEY, DATA_TASKS_KEY, CONF_HIDE_DONE
+from custom_components.vikunja.util import remove_task_with_entities
 
 
 class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
@@ -71,12 +72,10 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
                     self._hass.config_entries.async_schedule_reload(self._config_id)
 
                 # Remove deleted tasks
-                # if removed_tasks:
-                #     for task_id in removed_tasks:
-                #         entity_id = f"sensor.vikunja_task_{task_id}"  # Adjust based on entity type
-                #         if entity_id in self._hass.states.async_entity_ids():
-                #             await self._hass.states.async_remove(entity_id)
-                #             LOGGER.info(f"Removed deleted Vikunja task: {entity_id}")
+                if removed_tasks:
+                    for task_id in removed_tasks:
+                        LOGGER.info(f"Attempting to remove {task_id}")
+                        await remove_task_with_entities(self._hass, self._config_id, task_id)
 
                 return result
         except Exception as e:
