@@ -42,7 +42,7 @@ async def async_setup_entry(hass, entry):
         LOGGER.error(f"Error setting up Vikunja at {vikunja_api.web_ui_link}: {e}")
         raise e
 
-    coordinator = VikunjaDataUpdateCoordinator(hass, entry.entry_id, vikunja_api, secs_interval)
+    coordinator = VikunjaDataUpdateCoordinator(hass, entry, vikunja_api, secs_interval)
     await coordinator.async_config_entry_first_refresh()
 
     # Update the entry title to include the host
