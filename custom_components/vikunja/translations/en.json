@@ -7,7 +7,7 @@
         "data": {
           "url": "Vikunja Instance URL (e.g. 192.168.0.10:3456)",
           "api_key": "Vikunja API Key",
-          "seconds_interval": "Poll interval (seconds)",
+          "seconds_interval": "Update interval (seconds)",
           "hide_done": "Hide Completed Tasks"
         }
       }
@@ -23,8 +23,8 @@
         "title": "Update Vikunja Settings",
         "description": "Modify the Vikunja integration settings.",
         "data": {
-          "url": "Base URL",
-          "api_key": "API Token",
+          "url": "Vikunja Instance URL (e.g. 192.168.0.10:3456)",
+          "api_key": "Vikunja API Key",
           "seconds_interval": "Update Interval (seconds)",
           "hide_done": "Hide Completed Tasks"
         }
