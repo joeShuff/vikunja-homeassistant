@@ -6,17 +6,19 @@ from homeassistant.core import HomeAssistant
 from pyvikunja.api import VikunjaAPI
 
 from custom_components.vikunja import LOGGER
-from custom_components.vikunja.const import DATA_PROJECTS_KEY, DATA_TASKS_KEY
+from custom_components.vikunja.const import DATA_PROJECTS_KEY, DATA_TASKS_KEY, CONF_HIDE_DONE
+from custom_components.vikunja.util import remove_task_with_entities
 
 
 class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
     """Coordinator to manage Vikunja API updates."""
 
-    def __init__(self, hass: HomeAssistant, config_id, vikunja_api: VikunjaAPI, seconds_interval: int = 60):
+    def __init__(self, hass: HomeAssistant, config_entry, vikunja_api: VikunjaAPI, seconds_interval: int = 60):
         """Initialize the coordinator."""
         self._hass = hass
         self._vikunja_api = vikunja_api
-        self._config_id = config_id
+        self._config_id = config_entry.entry_id
+        self._config_entry = config_entry
 
         super().__init__(
             hass,
@@ -36,6 +38,8 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
                 # Get current projects and tasks, defaulting to empty sets
                 has_data = self.data is not None
 
+                skip_done = self._config_entry.data.get(CONF_HIDE_DONE) or False
+
                 current_projects = set(self.data[DATA_PROJECTS_KEY].keys()) if self.data else set()
                 current_tasks = set(self.data[DATA_TASKS_KEY].keys()) if self.data else set()
 
@@ -48,6 +52,9 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
                     new_tasks = await self._vikunja_api.get_tasks(project.id)
 
                     for task in new_tasks:
+                        if task.done and skip_done:
+                            continue
+
                         if task.id not in tasks.keys():
                             tasks[task.id] = task
 
@@ -65,12 +72,10 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
                     self._hass.config_entries.async_schedule_reload(self._config_id)
 
                 # Remove deleted tasks
-                # if removed_tasks:
-                #     for task_id in removed_tasks:
-                #         entity_id = f"sensor.vikunja_task_{task_id}"  # Adjust based on entity type
-                #         if entity_id in self._hass.states.async_entity_ids():
-                #             await self._hass.states.async_remove(entity_id)
-                #             LOGGER.info(f"Removed deleted Vikunja task: {entity_id}")
+                if removed_tasks:
+                    for task_id in removed_tasks:
+                        LOGGER.info(f"Attempting to remove {task_id}")
+                        await remove_task_with_entities(self._hass, self._config_id, task_id)
 
                 return result
         except Exception as e:

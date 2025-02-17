@@ -14,7 +14,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     LOGGER.info("Setting up Vikunja sensors...")
 
     # Get stored API instance and fetched data
-    vikunja_data = hass.data.get("vikunja", {}).get(entry.entry_id)
+    vikunja_data = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     if not vikunja_data:
         LOGGER.error("No Vikunja data found in hass.data")
         return False

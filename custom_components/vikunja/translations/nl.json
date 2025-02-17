@@ -1,0 +1,34 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Verbinden met Vikunja",
+        "description": "Verbind met de Vikunja integratie door de API URL en sleutel in te stellen.",
+        "data": {
+          "url": "Vikunja Instantie URL (bijv. 192.168.0.10:3456)",
+          "api_key": "Vikunja API sleutel",
+          "seconds_interval": "Update Interval (seconden)",
+          "hide_done": "Verberg voltooide taken"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ongeldige authenticatie.",
+      "cannot_connect": "Kan niet met Vikunja API verbinden."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Vikunja Instellingen Wijzigen",
+        "description": "Pas Vikunja integratie instellingen aan.",
+        "data": {
+          "url": "Vikunja Instantie URL (bijv. 192.168.0.10:3456)",
+          "api_key": "Vikunja API sleutel",
+          "seconds_interval": "Update Interval (seconden)",
+          "hide_done": "Verberg voltooide taken"
+        }
+      }
+    }
+  }
+}
