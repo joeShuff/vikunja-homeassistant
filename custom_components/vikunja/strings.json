@@ -10,21 +10,25 @@
           "seconds_interval": "Poll interval (seconds)",
           "hide_done": "Hide Completed Tasks"
         }
-      },
-      "init": {
-        "title": "Reconfigure Vikunja",
-        "description": "Update your Vikunja settings.",
-        "data": {
-          "url": "Vikunja Instance URL (e.g. 192.168.0.10:3456)",
-          "api_key": "Vikunja API Key",
-          "seconds_interval": "Poll interval (seconds)",
-          "hide_done": "Hide Completed Tasks"
-        }
       }
     },
     "error": {
       "invalid_auth": "Invalid authentication.",
       "cannot_connect": "Cannot connect to Vikunja API."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Update Vikunja Settings",
+        "description": "Modify the Vikunja integration settings.",
+        "data": {
+          "url": "Base URL",
+          "api_key": "API Token",
+          "seconds_interval": "Update Interval (seconds)",
+          "hide_done": "Hide Completed Tasks"
+        }
+      }
     }
   }
 }

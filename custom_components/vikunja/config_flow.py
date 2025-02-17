@@ -70,7 +70,6 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
     def __init__(self, config_entry):
         """Initialize options flow."""
         self.config_entry = config_entry
-        LOGGER.info(f"config is {config_entry.data}")
 
     async def async_step_init(self, user_input=None):
         """Handle updating the API key."""
