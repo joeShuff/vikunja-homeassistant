@@ -61,15 +61,11 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: ConfigEntry):
         """Return the options flow."""
-        return VikunjaOptionsFlow(config_entry)
+        return VikunjaOptionsFlow()
 
 
 class VikunjaOptionsFlow(config_entries.OptionsFlow):
     """Allow reconfiguring the config in options."""
-
-    def __init__(self, config_entry):
-        """Initialize options flow."""
-        self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
         """Handle updating the API key."""
@@ -86,8 +82,8 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
                 CONF_HIDE_DONE: user_input[CONF_HIDE_DONE]
             }
 
-            coordinator: VikunjaDataUpdateCoordinator = \
-                self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)['coordinator']
+            hass_data = self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)
+            coordinator: VikunjaDataUpdateCoordinator = None if hass_data is None else hass_data['coordinator']
 
             try:
                 await api.ping()  # Ensure the API key is valid
@@ -96,7 +92,11 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
                     data=data
                 )
 
-                await coordinator.async_request_refresh()
+                if coordinator is not None:
+                    await coordinator.async_request_refresh()
+                else:
+                    await self.hass.config_entries.async_reload(self.config_entry.entry_id)
+
                 return self.async_create_entry(title="", data=data)
             except httpx.HTTPError as e:
                 errors["base"] = f"Error setting up: {e}"
