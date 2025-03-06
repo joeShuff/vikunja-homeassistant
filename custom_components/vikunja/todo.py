@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from typing import cast, Optional
 
 from homeassistant.components.todo import TodoItem, TodoItemStatus, TodoListEntity, TodoListEntityFeature
@@ -62,12 +62,12 @@ class VikunjaTaskTodoListEntity(
 
     _attr_has_entity_name = True
     _attr_supported_features = (
-        #        TodoListEntityFeature.CREATE_TODO_ITEM
-        TodoListEntityFeature.UPDATE_TODO_ITEM
-        #        | TodoListEntityFeature.DELETE_TODO_ITEM
-        #        | TodoListEntityFeature.MOVE_TODO_ITEM
-               | TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM
-               | TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
+            TodoListEntityFeature.CREATE_TODO_ITEM |
+            TodoListEntityFeature.UPDATE_TODO_ITEM |
+            #        | TodoListEntityFeature.DELETE_TODO_ITEM |
+            #        | TodoListEntityFeature.MOVE_TODO_ITEM |
+            TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM |
+            TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
     )
 
     def __init__(
@@ -111,25 +111,43 @@ class VikunjaTaskTodoListEntity(
 
         return [_convert_api_item(item) for item in self.tasks_for_project()]
 
+    async def async_create_todo_item(self, item: TodoItem) -> None:
+        data = {
+                "done": item.status == TodoItemStatus.COMPLETED,
+                "title": item.summary,
+                "due_date": None,
+                "description": item.description
+            }
+
+        if item.due is not None and item.status != TodoItemStatus.COMPLETED:
+            data["due_date"] = str(item.due.replace(tzinfo=timezone.utc).isoformat())
+
+        await self.project.create_task(data)
+        await self._coordinator.async_request_refresh()
+
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """Update a To-do item."""
         uid = int(item.uid)
+
+        LOGGER.info(f"setting {uid} to {item}")
+
         task = self.task_by_id(uid)
+        LOGGER.info(f"matching task is {task}")
 
         new_data = {
-                    "done": item.status == TodoItemStatus.COMPLETED,
-                    "title": item.summary,
-                    "due_date": None,
-                    "description": item.description
-                }
+            "done": item.status == TodoItemStatus.COMPLETED,
+            "title": item.summary,
+            "due_date": None,
+            "description": item.description
+        }
 
-        if item.due is not None:
+        if item.due is not None and item.status != TodoItemStatus.COMPLETED:
             new_data["due_date"] = str(item.due.replace(tzinfo=timezone.utc).isoformat())
 
-        if item.status == TodoItemStatus.COMPLETED:
-            del(new_data["due_date"])
+        LOGGER.info(f"new data is {new_data}")
 
         if task is not None:
+            LOGGER.info(f"current data is {task.data}")
             await task.update(new_data)
 
         self._coordinator.async_update_listeners()
