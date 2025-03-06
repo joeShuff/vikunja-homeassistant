@@ -124,7 +124,7 @@ class VikunjaTaskTodoListEntity(
                 }
 
         if item.due is not None:
-            new_data["due_date"] = str(item.due.isoformat()) + "Z"
+            new_data["due_date"] = str(item.due.replace(tzinfo=timezone.utc).isoformat())
 
         if item.status == TodoItemStatus.COMPLETED:
             del(new_data["due_date"])
