@@ -1,10 +1,10 @@
 {
   "domain": "vikunja",
   "name": "Vikunja",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "documentation": "https://github.com/joeShuff/vikunja-homeassistant",
   "codeowners": ["@joeShuff"],
-  "requirements": ["pyvikunja==0.14"],
+  "requirements": ["pyvikunja==0.15"],
   "config_flow": true,
   "integration_type": "service",
   "iot_class": "local_polling"

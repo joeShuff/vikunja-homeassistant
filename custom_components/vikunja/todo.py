@@ -113,22 +113,24 @@ class VikunjaTaskTodoListEntity(
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """Update a To-do item."""
-        uid: int = cast(int, item.uid)
-
-        LOGGER.info(f"setting {uid} to {item}")
-
+        uid = int(item.uid)
         task = self.task_by_id(uid)
-        LOGGER.info(f"matching task is {task}")
 
-        if task is not None:
-            await task.update(
-                {
+        new_data = {
                     "done": item.status == TodoItemStatus.COMPLETED,
                     "title": item.summary,
-                    "due_date": str(item.due.isoformat()),
+                    "due_date": None,
                     "description": item.description
                 }
-            )
+
+        if item.due is not None:
+            new_data["due_date"] = str(item.due.isoformat()) + "Z"
+
+        if item.status == TodoItemStatus.COMPLETED:
+            del(new_data["due_date"])
+
+        if task is not None:
+            await task.update(new_data)
 
         self._coordinator.async_update_listeners()
         await self._coordinator.async_request_refresh()
