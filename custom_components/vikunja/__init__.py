@@ -17,7 +17,8 @@ PLATFORMS = [
     Platform.BUTTON,
     Platform.SELECT,
     Platform.NUMBER,
-    Platform.SWITCH
+    Platform.SWITCH,
+    Platform.TODO
 ]
 
 

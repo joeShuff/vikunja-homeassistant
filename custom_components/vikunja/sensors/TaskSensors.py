@@ -151,6 +151,10 @@ class VikunjaTaskDueDateSensor(VikunjaTaskEntity, SensorEntity):
         super().__init__(coordinator, base_url, task_id)
 
     @property
+    def available(self) -> bool:
+        return self.task.due_date is not None
+
+    @property
     def name(self):
         """Return the name of the sensor."""
         return f"{self.name_prefix()} Due Date"
@@ -225,6 +229,10 @@ class VikunjaTaskStartDateSensor(VikunjaTaskEntity, DateTimeEntity):
         super().__init__(coordinator, base_url, task_id)
 
     @property
+    def available(self) -> bool:
+        return self.task.start_date is not None
+
+    @property
     def name(self):
         """Return the name of the sensor."""
         return f"{self.name_prefix()} Start Date"
@@ -254,6 +262,10 @@ class VikunjaTaskEndDateSensor(VikunjaTaskEntity, DateTimeEntity):
 
     def __init__(self, coordinator, base_url, task_id):
         super().__init__(coordinator, base_url, task_id)
+
+    @property
+    def available(self) -> bool:
+        return self.task.end_date is not None
 
     @property
     def name(self):
