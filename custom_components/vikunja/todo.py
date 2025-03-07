@@ -64,8 +64,8 @@ class VikunjaTaskTodoListEntity(
     _attr_supported_features = (
             TodoListEntityFeature.CREATE_TODO_ITEM |
             TodoListEntityFeature.UPDATE_TODO_ITEM |
-            #        | TodoListEntityFeature.DELETE_TODO_ITEM |
-            #        | TodoListEntityFeature.MOVE_TODO_ITEM |
+            TodoListEntityFeature.DELETE_TODO_ITEM |
+            # TodoListEntityFeature.MOVE_TODO_ITEM |
             TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM |
             TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
     )
@@ -113,17 +113,28 @@ class VikunjaTaskTodoListEntity(
 
     async def async_create_todo_item(self, item: TodoItem) -> None:
         data = {
-                "done": item.status == TodoItemStatus.COMPLETED,
-                "title": item.summary,
-                "due_date": None,
-                "description": item.description
-            }
+            "done": item.status == TodoItemStatus.COMPLETED,
+            "title": item.summary,
+            "due_date": None,
+            "description": item.description
+        }
 
         if item.due is not None and item.status != TodoItemStatus.COMPLETED:
             data["due_date"] = str(item.due.replace(tzinfo=timezone.utc).isoformat())
 
         await self.project.create_task(data)
+        self._coordinator.async_update_listeners()
         await self._coordinator.async_request_refresh()
+
+    async def async_delete_todo_items(self, uids: list[str]) -> None:
+        for uid in uids:
+            id = int(uid)
+
+            task = self.task_by_id(id)
+
+            await task.delete_task()
+            self._coordinator.async_update_listeners()
+            await self._coordinator.async_request_refresh()
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """Update a To-do item."""
