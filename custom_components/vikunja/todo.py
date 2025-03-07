@@ -129,10 +129,8 @@ class VikunjaTaskTodoListEntity(
         """Update a To-do item."""
         uid = int(item.uid)
 
-        LOGGER.info(f"setting {uid} to {item}")
-
+        # Find task that matches ID
         task = self.task_by_id(uid)
-        LOGGER.info(f"matching task is {task}")
 
         new_data = {
             "done": item.status == TodoItemStatus.COMPLETED,
@@ -144,10 +142,7 @@ class VikunjaTaskTodoListEntity(
         if item.due is not None and item.status != TodoItemStatus.COMPLETED:
             new_data["due_date"] = str(item.due.replace(tzinfo=timezone.utc).isoformat())
 
-        LOGGER.info(f"new data is {new_data}")
-
         if task is not None:
-            LOGGER.info(f"current data is {task.data}")
             await task.update(new_data)
 
         self._coordinator.async_update_listeners()
