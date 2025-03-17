@@ -7,7 +7,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from pyvikunja.api import VikunjaAPI
 
-from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, LOGGER, CONF_SECS_INTERVAL, CONF_HIDE_DONE
+from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, LOGGER, CONF_SECS_INTERVAL, CONF_HIDE_DONE, CONF_STRICT_SSL
 from .coordinator import VikunjaDataUpdateCoordinator
 
 PLATFORMS = [
@@ -71,8 +71,15 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_migrate_entry(hass, entry: config_entries.ConfigEntry) -> bool:
     """Migrate old entry to the new version."""
-    if entry.version == 1:
-        new_data = {**entry.data, CONF_HIDE_DONE: False}  # Add default False
-        hass.config_entries.async_update_entry(entry, data=new_data, version=2)
-        return True
-    return False
+    new_data = {**entry.data}
+
+    if entry.version < 2:
+        new_data[CONF_HIDE_DONE] = False # Add default False
+        entry.version = 2
+
+    if entry.version < 3:
+        new_data[CONF_STRICT_SSL] = True
+        entry.version = 3
+
+    hass.config_entries.async_update_entry(entry, data=new_data, version=entry.version)
+    return True
