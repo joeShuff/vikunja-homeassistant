@@ -56,15 +56,24 @@ Once the integration is installed, you need to provide your Vikunja instance's U
 1. Go to your Vikunja instance at [https://vikunja.io/](https://vikunja.io/) or your self-hosted Vikunja.
 2. Log in to your account.
 3. Navigate to the **API Keys** section in your Vikunja user settings.
-4. Create a new API key.
+4. Create a new API key. Giving some subset of access:
+   - An expiration you'd prefer. I set mine to 10 years.
+   - Projects (the integration fetches projects first, then tasks for projects)
+     - Read All
+     - Read One
+   - Tasks
+     - Create (optional if you want to create more via Todo)
+     - Delete (optional if you want to delete via Todo)
+     - Read All (required)
+     - Read One (required)
+     - Update (required)
 5. Copy the generated API key.
 
-### Configuration.yaml
+### Setup
 
 This integration can be setup from the UI, so simply go to "Devices" -> "Add integration" and search for Vikunja.
 
 Or use this button:
-
 ![setup.png](art/setup.png)
 ![setup_result.png](art/setup_result.png)
 ![tasks_in_vikunja.png](art/tasks_in_vikunja.png)
@@ -83,6 +92,13 @@ These are the permissions I have that work:
 After successfully setting up the integration, Vikunja tasks will automatically appear as sensors and entities in Home Assistant. You can view their status, modify task attributes, and automate based on task data.
 
 ![sensors.png](art/sensors.png)
+
+You will also find that each "Project" in Vikunja has created a Todo List in HA.
+
+![todo_lists.png](art/todo_lists.png)
+
+And you can Create/Update/Complete tasks from the Todo section
+![todo_item.png](art/todo_item.png)
 
 ### Contributing
 **Note** I am considering committing this to become a core home assistant integration but using HACS as a quicker to market solution.
