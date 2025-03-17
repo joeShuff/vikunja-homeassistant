@@ -7,7 +7,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from pyvikunja.api import VikunjaAPI
 
-from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, LOGGER, CONF_SECS_INTERVAL, CONF_HIDE_DONE
+from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, LOGGER, CONF_SECS_INTERVAL, CONF_HIDE_DONE, CONF_STRICT_SSL
 from .coordinator import VikunjaDataUpdateCoordinator
 
 PLATFORMS = [
@@ -29,13 +29,14 @@ async def async_setup_entry(hass, entry):
     base_url = entry.data.get(CONF_BASE_URL) or ""
     token = entry.data.get(CONF_TOKEN) or ""
     secs_interval = entry.data.get(CONF_SECS_INTERVAL) or 60
+    strict_ssl = entry.data.get(CONF_STRICT_SSL) or True
 
     if not base_url or not token:
         LOGGER.error("Base URL or token is missing")
         return False
 
     # Initialize Vikunja API client
-    vikunja_api = VikunjaAPI(base_url, token)
+    vikunja_api = VikunjaAPI(base_url, token, strict_ssl)
 
     try:
         await vikunja_api.ping()
@@ -71,8 +72,18 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_migrate_entry(hass, entry: config_entries.ConfigEntry) -> bool:
     """Migrate old entry to the new version."""
-    if entry.version == 1:
-        new_data = {**entry.data, CONF_HIDE_DONE: False}  # Add default False
-        hass.config_entries.async_update_entry(entry, data=new_data, version=2)
-        return True
-    return False
+    new_data = {**entry.data}
+    new_version = 1
+
+    if entry.version < 2:
+        LOGGER.debug("Migrating Vikunja to config v2")
+        new_data[CONF_HIDE_DONE] = False # Add default False
+        new_version = 2
+
+    if entry.version < 3:
+        LOGGER.debug("Migrating Vikunja to config v3")
+        new_data[CONF_STRICT_SSL] = True
+        new_version = 3
+
+    hass.config_entries.async_update_entry(entry, data=new_data, version=new_version)
+    return True
