@@ -9,7 +9,7 @@
           "api_key": "Vikunja API sleutel",
           "seconds_interval": "Update Interval (seconden)",
           "hide_done": "Verberg voltooide taken",
-          "strict_ssl": "Strict SSL"
+          "strict_ssl": "Strikte SSL"
         }
       }
     },
@@ -28,7 +28,7 @@
           "api_key": "Vikunja API sleutel",
           "seconds_interval": "Update Interval (seconden)",
           "hide_done": "Verberg voltooide taken",
-          "strict_ssl": "Strict SSL"
+          "strict_ssl": "Strikte SSL"
         }
       }
     }
