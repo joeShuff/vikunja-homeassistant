@@ -11,7 +11,7 @@ async def remove_task_with_entities(hass, config_id, task_id):
     entities_to_remove = []
 
     for entry in ent_reg.entities.values():
-        if entry.unique_id.startswith(f"task_{task_id}") and entry.config_entry_id == config_id:
+        if entry.unique_id.startswith(f"task_{task_id}_") and entry.config_entry_id == config_id:
             entities_to_remove.append(entry.entity_id)
             if entry.device_id:
                 devices_to_check.add(entry.device_id)
