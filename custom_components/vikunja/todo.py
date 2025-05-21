@@ -6,6 +6,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 from pyvikunja.api import VikunjaAPI
 from pyvikunja.models.project import Project
 from pyvikunja.models.task import Task
@@ -46,11 +47,20 @@ def _convert_api_item(item: Task) -> TodoItem:
     """Convert tasks API items into a TodoItem."""
     status = TodoItemStatus.COMPLETED if item.done else TodoItemStatus.NEEDS_ACTION
 
+    # Convert the UTC date coming from Vikunja to HA's local timezone
+    if item.due_date is not None:
+        due_utc = item.due_date
+        if due_utc.tzinfo is None:
+            due_utc = due_utc.replace(tzinfo=timezone.utc)
+        due_local = dt_util.as_local(due_utc)
+    else:
+        due_local = None
+        
     return TodoItem(
         summary=item.title,
         uid=str(item.id),
         status=status,
-        due=item.due_date,
+        due=due_local,
         description=item.description,
     )
 
@@ -120,7 +130,8 @@ class VikunjaTaskTodoListEntity(
         }
 
         if item.due is not None and item.status != TodoItemStatus.COMPLETED:
-            data["due_date"] = str(item.due.replace(tzinfo=timezone.utc).isoformat())
+            utc = dt_util.as_utc(item.due)
+            data["due_date"] = utc.isoformat(timespec="seconds").replace("+00:00", "Z")
 
         await self.project.create_task(data)
         self._coordinator.async_update_listeners()
@@ -151,7 +162,8 @@ class VikunjaTaskTodoListEntity(
         }
 
         if item.due is not None and item.status != TodoItemStatus.COMPLETED:
-            new_data["due_date"] = str(item.due.replace(tzinfo=timezone.utc).isoformat())
+            utc = dt_util.as_utc(item.due)
+            data["due_date"] = utc.isoformat(timespec="seconds").replace("+00:00", "Z")
 
         if task is not None:
             await task.update(new_data)
