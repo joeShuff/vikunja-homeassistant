@@ -8,8 +8,9 @@
           "url": "Vikunja Instantie URL (bijv. 192.168.0.10:3456)",
           "api_key": "Vikunja API sleutel",
           "seconds_interval": "Update Interval (seconden)",
-          "hide_done": "Verberg voltooide taken",
-          "strict_ssl": "Strikte SSL"
+          "strict_ssl": "Strikte SSL",
+          "devices_mode": "Device Mode (How would you like your Vikunja tasks as HA devices)",
+          "enable_todo": "Create a TODO board per project"
         }
       }
     },
@@ -27,8 +28,9 @@
           "url": "Vikunja Instantie URL (bijv. 192.168.0.10:3456)",
           "api_key": "Vikunja API sleutel",
           "seconds_interval": "Update Interval (seconden)",
-          "hide_done": "Verberg voltooide taken",
-          "strict_ssl": "Strikte SSL"
+          "strict_ssl": "Strikte SSL",
+          "devices_mode": "Device Mode (How would you like your Vikunja tasks as HA devices)",
+          "enable_todo": "Create a TODO board per project"
         }
       }
     }

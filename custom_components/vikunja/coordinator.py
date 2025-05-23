@@ -6,7 +6,7 @@ from homeassistant.core import HomeAssistant
 from pyvikunja.api import VikunjaAPI
 
 from custom_components.vikunja import LOGGER
-from custom_components.vikunja.const import DATA_PROJECTS_KEY, DATA_TASKS_KEY, CONF_HIDE_DONE
+from custom_components.vikunja.const import *
 from custom_components.vikunja.util import remove_task_with_entities
 
 
@@ -27,6 +27,8 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(seconds=seconds_interval),
         )
 
+    def get_
+
     async def _async_update_data(self):
         """Fetch data from Vikunja API."""
         try:
@@ -37,8 +39,6 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
 
                 # Get current projects and tasks, defaulting to empty sets
                 has_data = self.data is not None
-
-                skip_done = self._config_entry.data.get(CONF_HIDE_DONE) or False
 
                 current_projects = set(self.data[DATA_PROJECTS_KEY].keys()) if self.data else set()
                 current_tasks = set(self.data[DATA_TASKS_KEY].keys()) if self.data else set()
@@ -52,9 +52,6 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
                     new_tasks = await self._vikunja_api.get_tasks(project.id)
 
                     for task in new_tasks:
-                        if task.done and skip_done:
-                            continue
-
                         if task.id not in tasks.keys():
                             tasks[task.id] = task
 
@@ -63,7 +60,7 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
 
                 # Calculate new and removed items
                 new_tasks = set(result[DATA_TASKS_KEY].keys()) - current_tasks
-                removed_tasks = current_tasks - set(tasks)
+                # removed_tasks = current_tasks - set(tasks)
                 new_projects = set(result[DATA_PROJECTS_KEY].keys()) - current_projects
 
                 # Reload only if new tasks or projects exist
@@ -71,11 +68,11 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
                     LOGGER.info("New tasks or projects detected, reloading entry")
                     self._hass.config_entries.async_schedule_reload(self._config_id)
 
-                # Remove deleted tasks
-                if removed_tasks:
-                    for task_id in removed_tasks:
-                        LOGGER.info(f"Attempting to remove {task_id}")
-                        await remove_task_with_entities(self._hass, self._config_id, task_id)
+                # # Remove deleted tasks
+                # if removed_tasks:
+                #     for task_id in removed_tasks:
+                #         LOGGER.info(f"Attempting to remove {task_id}")
+                #         await remove_task_with_entities(self._hass, self._config_id, task_id)
 
                 return result
         except Exception as e:
