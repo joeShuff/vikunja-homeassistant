@@ -313,3 +313,53 @@ class VikunjaTaskCompleteButton(VikunjaTaskEntity, ButtonEntity):
     @property
     def unique_id(self) -> str:
         return self.id_prefix() + "_mark_as_done"
+
+
+class VikunjaTaskAssigneeSensor(VikunjaTaskEntity, SensorEntity):
+    """Representation of a Vikunja Task assignee sensor."""
+
+    def __init__(self, coordinator, base_url, task_id):
+        super().__init__(coordinator, base_url, task_id)
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return f"{self.name_prefix()} Assignees"
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        # Check if the task has assignees (list)
+        if hasattr(self.task, 'assignees') and self.task.assignees:
+            # If there are multiple assignees, join their names/usernames
+            if isinstance(self.task.assignees, list) and len(self.task.assignees) > 0:
+                return ", ".join([
+                    self._get_assignee_display_name(assignee)
+                    for assignee in self.task.assignees
+                ])
+            # If there's a single assignee object
+            else:
+                return self._get_assignee_display_name(self.task.assignees)
+        
+        # Check if the task has a single assignee
+        if hasattr(self.task, 'assignee') and self.task.assignee:
+            return self._get_assignee_display_name(self.task.assignee)
+        
+        return "Unassigned"
+    
+    def _get_assignee_display_name(self, assignee):
+        """Get the display name for an assignee, preferring name over username."""
+        if hasattr(assignee, 'name') and assignee.name:
+            return assignee.name
+        elif hasattr(assignee, 'username') and assignee.username:
+            return assignee.username
+        return "Unknown"
+
+    @property
+    def icon(self):
+        """Icon for the sensor."""
+        return "mdi:account-multiple"
+
+    @property
+    def unique_id(self) -> str:
+        return self.id_prefix() + "_assignees"
