@@ -25,7 +25,7 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           title: "Update Version to match release ${{ env.VERSION }}"
-          body: "This PR updates the addon configuration to the tagged release version and includes changes to README and CHANGELOG."
+          body: "This PR updates the version in the manifest.json to match the latest tag."
           base: main
           branch: update-version-${{ env.VERSION }}
           token: ${{ secrets.GITHUB_TOKEN }}
