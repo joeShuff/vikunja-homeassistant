@@ -12,13 +12,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Get tag version (exact tag name)
-        id: vars
-        run: echo "TAG_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      - name: Get version tag from the release
+        run: |
+          echo "VERSION=${GITHUB_REF##*/}" >> $GITHUB_ENV
 
       - name: Update manifest.json version
         run: |
-          jq --arg version "${{ steps.vars.outputs.TAG_VERSION }}" \
+          jq --arg version "${{ env.VERSION }}" \
             '.version = $version' custom_components/vikunja/manifest.json > manifest.tmp.json && mv manifest.tmp.json custom_components/vikunja/manifest.json
 
       - name: Create Pull Request
