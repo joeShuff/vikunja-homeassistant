@@ -1,6 +1,7 @@
 from datetime import datetime, date, timezone
 from typing import cast, Optional
 
+import homeassistant.util.dt as dt
 from homeassistant.components.todo import TodoItem, TodoItemStatus, TodoListEntity, TodoListEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -151,7 +152,7 @@ class VikunjaTaskTodoListEntity(
         }
 
         if item.due is not None and item.status != TodoItemStatus.COMPLETED:
-            new_data["due_date"] = str(item.due.replace(tzinfo=timezone.utc).isoformat())
+            new_data["due_date"] = str(item.due.replace(tzinfo=dt.DEFAULT_TIME_ZONE).isoformat())
 
         if task is not None:
             await task.update(new_data)
