@@ -121,7 +121,7 @@ class VikunjaTaskTodoListEntity(
         }
 
         if item.due is not None and item.status != TodoItemStatus.COMPLETED:
-            data["due_date"] = str(item.due.replace(tzinfo=timezone.utc).isoformat())
+            data["due_date"] = str(item.due.replace(tzinfo=dt.DEFAULT_TIME_ZONE).isoformat())
 
         await self.project.create_task(data)
         self._coordinator.async_update_listeners()
