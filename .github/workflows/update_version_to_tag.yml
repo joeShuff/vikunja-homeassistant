@@ -1,0 +1,31 @@
+name: Update manifest version
+
+on:
+  push:
+    tags:
+      - '*'  # Match all tags like 1.0, v1.0, release-2025.06, etc.
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get version tag from the release
+        run: |
+          echo "VERSION=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+      - name: Update manifest.json version
+        run: |
+          jq --arg version "${{ env.VERSION }}" \
+            '.version = $version' custom_components/vikunja/manifest.json > manifest.tmp.json && mv manifest.tmp.json custom_components/vikunja/manifest.json
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "Update Version to match release ${{ env.VERSION }}"
+          body: "This PR updates the version in the manifest.json to match the latest tag."
+          base: main
+          branch: update-version-${{ env.VERSION }}
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -4,6 +4,7 @@ from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.button import ButtonEntity
 from homeassistant.components.datetime import DateTimeEntity
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from homeassistant.util import dt
 from pyvikunja.models.enum.task_priority import Priority
 
 from custom_components.vikunja.sensors.vikunja_task_entity import *
@@ -129,8 +130,8 @@ class VikunjaTaskOverdueSensor(VikunjaTaskEntity, BinarySensorEntity):
         if not due_date:
             return False  # No due date set
 
-        # Convert due_date to a datetime object
-        now = datetime.now()
+        # Get timezone-aware datetime from HomeAssistant
+        now = dt.now()
 
         return due_date <= now
 
@@ -312,3 +313,35 @@ class VikunjaTaskCompleteButton(VikunjaTaskEntity, ButtonEntity):
     @property
     def unique_id(self) -> str:
         return self.id_prefix() + "_mark_as_done"
+
+
+class VikunjaTaskAssigneeSensor(VikunjaTaskEntity, SensorEntity):
+    """Representation of a Vikunja Task assignee sensor."""
+
+    def __init__(self, coordinator, base_url, task_id):
+        super().__init__(coordinator, base_url, task_id)
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return f"{self.name_prefix()} Assignees"
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        if self.task.assignees:
+            return ", ".join(self._get_assignee_display_name(assignee) for assignee in self.task.assignees)
+        return "Unassigned"
+    
+    def _get_assignee_display_name(self, assignee):
+        """Get the display name for an assignee, preferring name over username."""
+        return assignee.name or assignee.username or "Unknown"
+
+    @property
+    def icon(self):
+        """Icon for the sensor."""
+        return "mdi:account-multiple"
+
+    @property
+    def unique_id(self) -> str:
+        return self.id_prefix() + "_assignees"

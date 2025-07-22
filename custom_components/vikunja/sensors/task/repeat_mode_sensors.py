@@ -143,7 +143,7 @@ class VikunjaRepeatIntervalSizeSensor(VikunjaTaskEntity, NumberEntity):
         """Initialize the sensor."""
         super().__init__(coordinator, base_url, task_id)
 
-    async def async_set_value(self, value: float) -> None:
+    async def async_set_native_value(self, value: float) -> None:
         # Get the tasks current repeat unit and value
         current_unit, current_value = get_repeat_info_for_task(self.task)
 
@@ -164,21 +164,21 @@ class VikunjaRepeatIntervalSizeSensor(VikunjaTaskEntity, NumberEntity):
         return f"{self.name_prefix()} Repeat Interval"
 
     @property
-    def state(self):
-        """Return the state of the sensor."""
+    def native_value(self) -> float:
+        """Return the value of the sensor."""
         unit, scaled_value = get_repeat_info_for_task(self.task)
         return scaled_value
 
     @property
-    def max_value(self) -> float:
+    def native_max_value(self) -> float:
         return 999999999
 
     @property
-    def min_value(self) -> float:
+    def native_min_value(self) -> float:
         return 1
 
     @property
-    def unit_of_measurement(self):
+    def native_unit_of_measurement(self):
         """Return the unit of measurement of the sensor."""
         unit, scaled_value = get_repeat_info_for_task(self.task)
 
