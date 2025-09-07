@@ -1,10 +1,9 @@
-from datetime import timedelta
-
 import httpx
 from homeassistant import config_entries
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.httpx_client import get_async_client
 from pyvikunja.api import VikunjaAPI
 
 from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, LOGGER, CONF_SECS_INTERVAL, CONF_HIDE_DONE, CONF_STRICT_SSL
@@ -36,7 +35,8 @@ async def async_setup_entry(hass, entry):
         return False
 
     # Initialize Vikunja API client
-    vikunja_api = VikunjaAPI(base_url, token, strict_ssl)
+    client = get_async_client(verify_ssl=strict_ssl)
+    vikunja_api = VikunjaAPI(base_url, token, strict_ssl, client)
 
     try:
         await vikunja_api.ping()
