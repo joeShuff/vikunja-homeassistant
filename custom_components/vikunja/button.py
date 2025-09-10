@@ -26,6 +26,10 @@ async def async_setup_entry(hass, entry, async_add_entities):
     # Create sensor entities
     entities = []
 
+    if coordinator.data is None:
+        LOGGER.error("No data in the coordinator yet")
+        return
+
     tasks = coordinator.data[DATA_TASKS_KEY].keys()
 
     for task_id in tasks:

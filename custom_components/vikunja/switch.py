@@ -23,6 +23,10 @@ async def async_setup_entry(hass, entry, async_add_entities):
     vikunja_api: VikunjaAPI = vikunja_data["api"]
     coordinator = vikunja_data["coordinator"]
 
+    if coordinator.data is None:
+        LOGGER.error("No data in the coordinator yet")
+        return
+
     # Create sensor entities
     entities = []
 

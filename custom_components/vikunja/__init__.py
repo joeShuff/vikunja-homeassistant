@@ -45,7 +45,6 @@ async def async_setup_entry(hass, entry):
         raise e
 
     coordinator = VikunjaDataUpdateCoordinator(hass, entry, vikunja_api, secs_interval)
-    await coordinator.async_config_entry_first_refresh()
 
     # Update the entry title to include the host
     new_title = f"Vikunja ({vikunja_api.web_ui_link})"
@@ -57,7 +56,11 @@ async def async_setup_entry(hass, entry):
         "coordinator": coordinator
     }
 
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    async def load_and_init():
+        await coordinator.async_config_entry_first_refresh()
+        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    hass.async_create_task(load_and_init())
 
     LOGGER.info("Vikunja setup complete")
     return True

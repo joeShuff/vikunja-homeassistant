@@ -27,6 +27,10 @@ async def async_setup_entry(
     vikunja_api: VikunjaAPI = vikunja_data["api"]
     coordinator = vikunja_data["coordinator"]
 
+    if coordinator.data is None:
+        LOGGER.error("No data in the coordinator yet")
+        return
+
     ## Filter projects to all that aren't ID -1 (that's favourites)
     projects: list[Project] = [proj for proj in coordinator.data[DATA_PROJECTS_KEY].values() if proj.id != -1]
 
