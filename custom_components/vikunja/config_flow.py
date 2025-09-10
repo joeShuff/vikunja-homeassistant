@@ -27,7 +27,7 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             hide_done = user_input.get(CONF_HIDE_DONE, False)
             strict_ssl = user_input.get(CONF_STRICT_SSL, True)
 
-            client = get_async_client(verify_ssl=strict_ssl)
+            client = get_async_client(self.hass, verify_ssl=strict_ssl)
             api = VikunjaAPI(base_url, token, strict_ssl, client)
 
             try:
@@ -74,7 +74,7 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
         errors = {}
 
         if user_input is not None:
-            client = get_async_client()
+            client = get_async_client(self.hass)
             # Validate the new API key before saving
             api = VikunjaAPI(user_input[CONF_BASE_URL], user_input[CONF_TOKEN], client=client)
 
