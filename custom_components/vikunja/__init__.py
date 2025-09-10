@@ -35,7 +35,7 @@ async def async_setup_entry(hass, entry):
         return False
 
     # Initialize Vikunja API client
-    client = get_async_client(verify_ssl=strict_ssl)
+    client = get_async_client(hass, verify_ssl=strict_ssl)
     vikunja_api = VikunjaAPI(base_url, token, strict_ssl, client)
 
     try:
