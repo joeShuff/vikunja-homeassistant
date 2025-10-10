@@ -1,0 +1,36 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Conectar a Vikunja",
+        "description": "Configura la integración de Vikunja proporcionando la API URL y su key.",
+        "data": {
+          "url": "Instancia de Vikunja URL (ej. 192.168.0.10:3456)",
+          "api_key": "Vikunja API Key",
+          "seconds_interval": "Intervalo de Actualización (segundos)",
+          "hide_done": "Ocultar Tareas Completadas",
+          "strict_ssl": "SSL Estricto"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Autenticación inválida.",
+      "cannot_connect": "No es posible contactar la API de Vikunja."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Actualizar Preferencias de Vikunja",
+        "description": "Modificar preferencias de la integración de Vikunja.",
+        "data": {
+          "url": "Instancia de Vikunja URL (ej. 192.168.0.10:3456)",
+          "api_key": "Vikunja API Key",
+          "seconds_interval": "Intervalo de Actualización (segundos)",
+          "hide_done": "Ocultar Tareas Completadas",
+          "strict_ssl": "SSL Estricto"
+        }
+      }
+    }
+  }
+}
