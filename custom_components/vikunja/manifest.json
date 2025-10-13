@@ -7,7 +7,7 @@
     "@joeShuff"
   ],
   "requirements": [
-    "pyvikunja==0.21"
+    "pyvikunja==0.22"
   ],
   "config_flow": true,
   "integration_type": "service",

@@ -4,6 +4,7 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers.httpx_client import get_async_client
 from pyvikunja.api import VikunjaAPI
 
 from . import VikunjaDataUpdateCoordinator
@@ -26,7 +27,8 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             hide_done = user_input.get(CONF_HIDE_DONE, False)
             strict_ssl = user_input.get(CONF_STRICT_SSL, True)
 
-            api = VikunjaAPI(base_url, token, strict_ssl)
+            client = get_async_client(self.hass, verify_ssl=strict_ssl)
+            api = VikunjaAPI(base_url, token, strict_ssl, client)
 
             try:
                 await api.ping()
@@ -72,8 +74,9 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
         errors = {}
 
         if user_input is not None:
+            client = get_async_client(self.hass)
             # Validate the new API key before saving
-            api = VikunjaAPI(user_input[CONF_BASE_URL], user_input[CONF_TOKEN])
+            api = VikunjaAPI(user_input[CONF_BASE_URL], user_input[CONF_TOKEN], client=client)
 
             data = {
                 CONF_BASE_URL: user_input[CONF_BASE_URL],
