@@ -1,7 +1,7 @@
 {
   "domain": "vikunja",
   "name": "Vikunja",
-  "version": "0.11",
+  "version": "0.12",
   "documentation": "https://github.com/joeShuff/vikunja-homeassistant",
   "codeowners": [
     "@joeShuff"
