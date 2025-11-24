@@ -11,6 +11,15 @@
           "hide_done": "Ocultar Tareas Completadas",
           "strict_ssl": "SSL Estricto"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigurar Conexión de Vikunja",
+        "description": "Actualizar configuración de conexión para la integración de Vikunja.",
+        "data": {
+          "url": "Instancia de Vikunja URL (ej. 192.168.0.10:3456)",
+          "api_key": "Vikunja API Key",
+          "strict_ssl": "SSL Estricto"
+        }
       }
     },
     "error": {
@@ -24,11 +33,8 @@
         "title": "Actualizar Preferencias de Vikunja",
         "description": "Modificar preferencias de la integración de Vikunja.",
         "data": {
-          "url": "Instancia de Vikunja URL (ej. 192.168.0.10:3456)",
-          "api_key": "Vikunja API Key",
           "seconds_interval": "Intervalo de Actualización (segundos)",
-          "hide_done": "Ocultar Tareas Completadas",
-          "strict_ssl": "SSL Estricto"
+          "hide_done": "Ocultar Tareas Completadas"
         }
       }
     }
