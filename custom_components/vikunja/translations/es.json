@@ -8,8 +8,15 @@
           "url": "Instancia de Vikunja URL (ej. 192.168.0.10:3456)",
           "api_key": "Vikunja API Key",
           "seconds_interval": "Intervalo de Actualización (segundos)",
-          "hide_done": "Ocultar Tareas Completadas",
           "strict_ssl": "SSL Estricto"
+        }
+      },
+      "select_projects": {
+        "title": "Seleccionar Proyectos a Sincronizar",
+        "description": "Elige qué proyectos de Vikunja sincronizar con Home Assistant. Se encontraron {project_count} proyectos.",
+        "data": {
+          "selected_projects": "Proyectos a Sincronizar",
+          "hide_done": "Ocultar Tareas Completadas"
         }
       },
       "reconfigure": {
@@ -24,19 +31,24 @@
     },
     "error": {
       "invalid_auth": "Autenticación inválida.",
-      "cannot_connect": "No es posible contactar la API de Vikunja."
+      "cannot_connect": "No es posible contactar la API de Vikunja.",
+      "no_projects_selected": "Por favor selecciona al menos un proyecto para sincronizar."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Actualizar Preferencias de Vikunja",
-        "description": "Modificar preferencias de la integración de Vikunja.",
+        "description": "Modificar preferencias de la integración de Vikunja. Se encontraron {project_count} proyectos.",
         "data": {
+          "selected_projects": "Proyectos a Sincronizar",
           "seconds_interval": "Intervalo de Actualización (segundos)",
           "hide_done": "Ocultar Tareas Completadas"
         }
       }
+    },
+    "error": {
+      "no_projects_selected": "Por favor selecciona al menos un proyecto para sincronizar."
     }
   }
 }
