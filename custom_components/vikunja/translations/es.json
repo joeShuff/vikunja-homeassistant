@@ -13,7 +13,7 @@
       },
       "select_projects": {
         "title": "Seleccionar Proyectos a Sincronizar",
-        "description": "Elige qué proyectos de Vikunja sincronizar con Home Assistant. Se encontraron {project_count} proyectos.",
+        "description": "Elige qué proyectos de Vikunja sincronizar con Home Assistant.",
         "data": {
           "selected_projects": "Proyectos a Sincronizar",
           "hide_done": "Ocultar Tareas Completadas"
@@ -39,7 +39,7 @@
     "step": {
       "init": {
         "title": "Actualizar Preferencias de Vikunja",
-        "description": "Modificar preferencias de la integración de Vikunja. Se encontraron {project_count} proyectos.",
+        "description": "Modificar preferencias de la integración de Vikunja.",
         "data": {
           "selected_projects": "Proyectos a Sincronizar",
           "seconds_interval": "Intervalo de Actualización (segundos)",

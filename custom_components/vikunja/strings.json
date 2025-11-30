@@ -13,7 +13,7 @@
       },
       "select_projects": {
         "title": "Select Projects to Sync",
-        "description": "Choose which Vikunja projects to synchronize with Home Assistant. Found {project_count} projects.",
+        "description": "Choose which Vikunja projects to synchronize with Home Assistant.",
         "data": {
           "selected_projects": "Projects to Sync",
           "hide_done": "Hide Completed Tasks"
@@ -39,7 +39,7 @@
     "step": {
       "init": {
         "title": "Update Vikunja Settings",
-        "description": "Modify the Vikunja integration settings. Found {project_count} projects.",
+        "description": "Modify the Vikunja integration settings.",
         "data": {
           "selected_projects": "Projects to Sync",
           "seconds_interval": "Update Interval (seconds)",
