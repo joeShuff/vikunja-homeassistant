@@ -13,22 +13,20 @@ from .const import (
     DOMAIN,
     CONF_BASE_URL,
     CONF_TOKEN,
+    CONF_TOKEN_NOT_CHANGED,
     CONF_SECS_INTERVAL,
     CONF_HIDE_DONE,
     CONF_STRICT_SSL,
     CONF_SELECTED_PROJECTS,
     CONF_ALL_PROJECTS,
     LOGGER,
-    DATA_PROJECTS_KEY,
-    DATA_TASKS_KEY,
 )
-from .util import remove_project_entities, remove_task_with_entities
 
 
 class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle the config flow for Vikunja integration."""
 
-    VERSION = 5
+    VERSION = 4
 
     def __init__(self):
         """Initialize the config flow."""
@@ -154,8 +152,14 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             base_url = user_input[CONF_BASE_URL]
-            token = user_input[CONF_TOKEN]
+            token_input = user_input[CONF_TOKEN]
             strict_ssl = user_input.get(CONF_STRICT_SSL, True)
+
+            # Use existing token if CONF_TOKEN_NOT_CHANGED value is provided
+            if token_input == CONF_TOKEN_NOT_CHANGED:
+                token = entry.data.get(CONF_TOKEN)
+            else:
+                token = token_input
 
             client = get_async_client(self.hass, verify_ssl=strict_ssl)
             api = VikunjaAPI(base_url, token, strict_ssl, client)
@@ -181,7 +185,7 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="reconfigure",
             data_schema=vol.Schema({
                 vol.Required(CONF_BASE_URL, default=entry.data.get(CONF_BASE_URL, "")): str,
-                vol.Required(CONF_TOKEN, default=entry.data.get(CONF_TOKEN, "")): selector.TextSelector(
+                vol.Required(CONF_TOKEN, default=CONF_TOKEN_NOT_CHANGED): selector.TextSelector(
                     selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
                 ),
                 vol.Optional(CONF_STRICT_SSL, default=entry.data.get(CONF_STRICT_SSL, True)): bool,
@@ -230,58 +234,6 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
             if not selected_projects:
                 errors["base"] = "no_projects_selected"
             else:
-                # Find projects that were deselected and clean up their entities
-                current_selection = self.config_entry.data.get(CONF_SELECTED_PROJECTS, [CONF_ALL_PROJECTS])
-                current_hide_done = self.config_entry.data.get(CONF_HIDE_DONE, False)
-                
-                # Get coordinator data to find tasks for deselected projects
-                hass_data = self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)
-                
-                if hass_data and "coordinator" in hass_data:
-                    coordinator = hass_data["coordinator"]
-                    
-                    if coordinator.data:
-                        # Determine which projects are being removed
-                        projects_to_remove = set()
-                        
-                        # If switching from "all projects" to specific selection
-                        if CONF_ALL_PROJECTS in current_selection and CONF_ALL_PROJECTS not in selected_projects:
-                            # Remove all projects not in the new selection
-                            for project_id in coordinator.data.get(DATA_PROJECTS_KEY, {}).keys():
-                                if str(project_id) not in selected_projects:
-                                    projects_to_remove.add(project_id)
-                        elif CONF_ALL_PROJECTS not in current_selection:
-                            # Was specific selection, find removed projects
-                            for project_id_str in current_selection:
-                                if project_id_str not in selected_projects and project_id_str != CONF_ALL_PROJECTS:
-                                    try:
-                                        projects_to_remove.add(int(project_id_str))
-                                    except ValueError:
-                                        pass
-                        
-                        # Clean up entities for deselected projects
-                        for project_id in projects_to_remove:
-                            LOGGER.info(f"Cleaning up entities for deselected project {project_id}")
-                            
-                            # Remove project/todo list entity
-                            await remove_project_entities(self.hass, self.config_entry.entry_id, project_id)
-                            
-                            # Remove all task entities and devices for this project
-                            tasks_data = coordinator.data.get(DATA_TASKS_KEY, {})
-                            for task_id, task in tasks_data.items():
-                                if task.project_id == project_id:
-                                    LOGGER.info(f"Removing task entities for task {task_id}")
-                                    await remove_task_with_entities(self.hass, self.config_entry.entry_id, task_id)
-                        
-                        # Clean up completed tasks when enabling "Hide Completed Tasks"
-                        if new_hide_done and not current_hide_done:
-                            LOGGER.info("Hide Completed Tasks enabled, cleaning up completed task entities")
-                            tasks_data = coordinator.data.get(DATA_TASKS_KEY, {})
-                            for task_id, task in tasks_data.items():
-                                if task.done:
-                                    LOGGER.info(f"Removing completed task entities for task {task_id}")
-                                    await remove_task_with_entities(self.hass, self.config_entry.entry_id, task_id)
-                
                 # Update all settings
                 data = {
                     **self.config_entry.data,
@@ -295,8 +247,14 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
                     data=data
                 )
 
-                # Reload to apply new settings
-                await self.hass.config_entries.async_reload(self.config_entry.entry_id)
+                # refresh coordinator to handle entity cleanup
+                hass_data = self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)
+                if hass_data and "coordinator" in hass_data:
+                    coordinator = hass_data["coordinator"]
+                    await coordinator.async_refresh()
+                else:
+                    # Fallback: reload the config entry if coordinator not available
+                    await self.hass.config_entries.async_reload(self.config_entry.entry_id)
 
                 return self.async_create_entry(title="", data={})
 

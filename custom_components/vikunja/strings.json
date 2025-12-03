@@ -29,6 +29,9 @@
         }
       }
     },
+    "abort": {
+      "reconfigure_successful": "Connection settings updated successfully."
+    },
     "error": {
       "invalid_auth": "Invalid authentication.",
       "cannot_connect": "Cannot connect to Vikunja API.",
