@@ -8,14 +8,34 @@
           "url": "Vikunja Instantie URL (bijv. 192.168.0.10:3456)",
           "api_key": "Vikunja API sleutel",
           "seconds_interval": "Update Interval (seconden)",
-          "hide_done": "Verberg voltooide taken",
+          "strict_ssl": "Strikte SSL"
+        }
+      },
+      "select_projects": {
+        "title": "Selecteer Projecten om te Synchroniseren",
+        "description": "Kies welke Vikunja projecten gesynchroniseerd moeten worden met Home Assistant.",
+        "data": {
+          "selected_projects": "Projecten om te Synchroniseren",
+          "hide_done": "Verberg voltooide taken"
+        }
+      },
+      "reconfigure": {
+        "title": "Vikunja Verbinding Opnieuw Configureren",
+        "description": "Werk verbindingsinstellingen bij voor de Vikunja integratie.",
+        "data": {
+          "url": "Vikunja Instantie URL (bijv. 192.168.0.10:3456)",
+          "api_key": "Vikunja API sleutel",
           "strict_ssl": "Strikte SSL"
         }
       }
     },
+    "abort": {
+      "reconfigure_successful": "Verbindingsinstellingen succesvol bijgewerkt."
+    },
     "error": {
       "invalid_auth": "Ongeldige authenticatie.",
-      "cannot_connect": "Kan niet met Vikunja API verbinden."
+      "cannot_connect": "Kan niet met Vikunja API verbinden.",
+      "no_projects_selected": "Selecteer alstublieft ten minste één project om te synchroniseren."
     }
   },
   "options": {
@@ -24,13 +44,14 @@
         "title": "Vikunja Instellingen Wijzigen",
         "description": "Pas Vikunja integratie instellingen aan.",
         "data": {
-          "url": "Vikunja Instantie URL (bijv. 192.168.0.10:3456)",
-          "api_key": "Vikunja API sleutel",
+          "selected_projects": "Projecten om te Synchroniseren",
           "seconds_interval": "Update Interval (seconden)",
-          "hide_done": "Verberg voltooide taken",
-          "strict_ssl": "Strikte SSL"
+          "hide_done": "Verberg voltooide taken"
         }
       }
+    },
+    "error": {
+      "no_projects_selected": "Selecteer alstublieft ten minste één project om te synchroniseren."
     }
   }
 }

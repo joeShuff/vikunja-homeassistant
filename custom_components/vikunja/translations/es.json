@@ -8,14 +8,34 @@
           "url": "Instancia de Vikunja URL (ej. 192.168.0.10:3456)",
           "api_key": "Vikunja API Key",
           "seconds_interval": "Intervalo de Actualización (segundos)",
-          "hide_done": "Ocultar Tareas Completadas",
+          "strict_ssl": "SSL Estricto"
+        }
+      },
+      "select_projects": {
+        "title": "Seleccionar Proyectos a Sincronizar",
+        "description": "Elige qué proyectos de Vikunja sincronizar con Home Assistant.",
+        "data": {
+          "selected_projects": "Proyectos a Sincronizar",
+          "hide_done": "Ocultar Tareas Completadas"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigurar Conexión de Vikunja",
+        "description": "Actualizar configuración de conexión para la integración de Vikunja.",
+        "data": {
+          "url": "Instancia de Vikunja URL (ej. 192.168.0.10:3456)",
+          "api_key": "Vikunja API Key",
           "strict_ssl": "SSL Estricto"
         }
       }
     },
+    "abort": {
+      "reconfigure_successful": "Configuración de conexión actualizada correctamente."
+    },
     "error": {
       "invalid_auth": "Autenticación inválida.",
-      "cannot_connect": "No es posible contactar la API de Vikunja."
+      "cannot_connect": "No es posible contactar la API de Vikunja.",
+      "no_projects_selected": "Por favor selecciona al menos un proyecto para sincronizar."
     }
   },
   "options": {
@@ -24,13 +44,14 @@
         "title": "Actualizar Preferencias de Vikunja",
         "description": "Modificar preferencias de la integración de Vikunja.",
         "data": {
-          "url": "Instancia de Vikunja URL (ej. 192.168.0.10:3456)",
-          "api_key": "Vikunja API Key",
+          "selected_projects": "Proyectos a Sincronizar",
           "seconds_interval": "Intervalo de Actualización (segundos)",
-          "hide_done": "Ocultar Tareas Completadas",
-          "strict_ssl": "SSL Estricto"
+          "hide_done": "Ocultar Tareas Completadas"
         }
       }
+    },
+    "error": {
+      "no_projects_selected": "Por favor selecciona al menos un proyecto para sincronizar."
     }
   }
 }

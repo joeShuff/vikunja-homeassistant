@@ -6,7 +6,17 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.httpx_client import get_async_client
 from pyvikunja.api import VikunjaAPI
 
-from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, LOGGER, CONF_SECS_INTERVAL, CONF_HIDE_DONE, CONF_STRICT_SSL
+from .const import (
+    DOMAIN,
+    CONF_BASE_URL,
+    CONF_TOKEN,
+    LOGGER,
+    CONF_SECS_INTERVAL,
+    CONF_HIDE_DONE,
+    CONF_STRICT_SSL,
+    CONF_SELECTED_PROJECTS,
+    CONF_ALL_PROJECTS,
+)
 from .coordinator import VikunjaDataUpdateCoordinator
 
 PLATFORMS = [
@@ -73,7 +83,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_migrate_entry(hass, entry: config_entries.ConfigEntry) -> bool:
     """Migrate old entry to the new version."""
     new_data = {**entry.data}
-    new_version = 1
+    new_version = entry.version
 
     if entry.version < 2:
         LOGGER.debug("Migrating Vikunja to config v2")
@@ -84,6 +94,12 @@ async def async_migrate_entry(hass, entry: config_entries.ConfigEntry) -> bool:
         LOGGER.debug("Migrating Vikunja to config v3")
         new_data[CONF_STRICT_SSL] = True
         new_version = 3
+
+    if entry.version < 4:
+        LOGGER.debug("Migrating Vikunja to config v4")
+        # Add selected_projects with "all projects" as default for existing installations
+        new_data[CONF_SELECTED_PROJECTS] = [CONF_ALL_PROJECTS]
+        new_version = 4
 
     hass.config_entries.async_update_entry(entry, data=new_data, version=new_version)
     return True
