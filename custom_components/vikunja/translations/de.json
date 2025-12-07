@@ -1,0 +1,57 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mit Vikunja verbinden",
+        "description": "Richten Sie die Vikunja-Integration ein, indem Sie die API-URL und den Schlüssel angeben.",
+        "data": {
+          "url": "Vikunja-Instanz-URL (z. B. 192.168.0.10:3456)",
+          "api_key": "Vikunja API-Schlüssel",
+          "seconds_interval": "Aktualisierungsintervall (Sekunden)",
+          "strict_ssl": "Striktes SSL"
+        }
+      },
+      "select_projects": {
+        "title": "Projekte zum Synchronisieren auswählen",
+        "description": "Wählen Sie aus, welche Vikunja-Projekte mit Home Assistant synchronisiert werden sollen.",
+        "data": {
+          "selected_projects": "Zu synchronisierende Projekte",
+          "hide_done": "Erledigte Aufgaben ausblenden"
+        }
+      },
+      "reconfigure": {
+        "title": "Vikunja-Verbindung neu konfigurieren",
+        "description": "Verbindungseinstellungen für die Vikunja-Integration aktualisieren.",
+        "data": {
+          "url": "Vikunja-Instanz-URL (z. B. 192.168.0.10:3456)",
+          "api_key": "Vikunja API-Schlüssel",
+          "strict_ssl": "Striktes SSL"
+        }
+      }
+    },
+    "abort": {
+      "reconfigure_successful": "Verbindungseinstellungen erfolgreich aktualisiert."
+    },
+    "error": {
+      "invalid_auth": "Ungültige Authentifizierung.",
+      "cannot_connect": "Verbindung zur Vikunja-API fehlgeschlagen.",
+      "no_projects_selected": "Bitte wählen Sie mindestens ein Projekt zum Synchronisieren aus."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Vikunja-Einstellungen aktualisieren",
+        "description": "Ändern Sie die Einstellungen der Vikunja-Integration.",
+        "data": {
+          "selected_projects": "Zu synchronisierende Projekte",
+          "seconds_interval": "Aktualisierungsintervall (Sekunden)",
+          "hide_done": "Erledigte Aufgaben ausblenden"
+        }
+      }
+    },
+    "error": {
+      "no_projects_selected": "Bitte wählen Sie mindestens ein Projekt zum Synchronisieren aus."
+    }
+  }
+}
