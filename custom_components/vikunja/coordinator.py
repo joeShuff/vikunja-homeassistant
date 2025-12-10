@@ -47,7 +47,10 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self):
         """Fetch data from Vikunja API."""
         try:
-            async with async_timeout.timeout(10):
+            async with async_timeout.timeout(20):
+                # Check connection status before fetching/removing data from API
+                await self._vikunja_api.ping()
+
                 LOGGER.info("Fetching projects from Vikunja API...")
                 all_projects = await self._vikunja_api.get_projects()
                 LOGGER.info(f"Fetched {len(all_projects)} total projects from API.")
@@ -108,5 +111,5 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
 
                 return result
         except Exception as e:
-            LOGGER.error(f"Error fetching data from Vikunja API: {e}")
-            raise e
+            LOGGER.debug(f"Unexpected error fetching data from Vikunja API: {e}")
+            raise UpdateFailed(f"Unexpected error: {e}") from e
