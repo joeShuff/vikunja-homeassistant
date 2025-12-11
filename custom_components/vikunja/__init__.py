@@ -3,8 +3,9 @@ from homeassistant import config_entries
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.httpx_client import get_async_client
-from pyvikunja.api import VikunjaAPI
+from pyvikunja.api import VikunjaAPI, APIError
 
 from .const import (
     DOMAIN,
@@ -50,9 +51,9 @@ async def async_setup_entry(hass, entry):
 
     try:
         await vikunja_api.ping()
-    except httpx.HTTPError as e:
+    except (httpx.HTTPError, APIError) as e:
         LOGGER.error(f"Error setting up Vikunja at {vikunja_api.web_ui_link}: {e}")
-        raise e
+        raise ConfigEntryNotReady from e
 
     coordinator = VikunjaDataUpdateCoordinator(hass, entry, vikunja_api, secs_interval)
     await coordinator.async_config_entry_first_refresh()

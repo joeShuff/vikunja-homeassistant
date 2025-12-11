@@ -3,7 +3,7 @@ from datetime import timedelta
 import async_timeout
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.core import HomeAssistant
-from pyvikunja.api import VikunjaAPI
+from pyvikunja.api import VikunjaAPI, APIError
 
 from custom_components.vikunja import LOGGER
 from custom_components.vikunja.const import (
@@ -107,6 +107,9 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
                         await remove_project_entities(self._hass, self._config_id, project_id)
 
                 return result
+        except APIError as e:
+            LOGGER.debug(f"API Error fetching data from Vikunja: {e}")
+            raise UpdateFailed(f"API Error: {e}") from e
         except Exception as e:
-            LOGGER.error(f"Error fetching data from Vikunja API: {e}")
-            raise e
+            LOGGER.debug(f"Unexpected error fetching data from Vikunja API: {e}")
+            raise UpdateFailed(f"Unexpected error: {e}") from e
