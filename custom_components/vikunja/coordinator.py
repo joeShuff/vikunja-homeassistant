@@ -118,6 +118,11 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
                             bucket_tasks = bucket.get("tasks") if isinstance(bucket, dict) else None
                             if not isinstance(bucket_tasks, list):
                                 bucket_tasks = []
+                            bucket_id = bucket.get("id") if isinstance(bucket, dict) else None
+                            if bucket_id:
+                                for task in bucket_tasks:
+                                    if isinstance(task, dict) and not task.get("bucket_id"):
+                                        task["bucket_id"] = bucket_id
                             if skip_done:
                                 bucket_tasks = [
                                     task for task in bucket_tasks
