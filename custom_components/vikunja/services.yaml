@@ -1,0 +1,30 @@
+call_api:
+  name: Call Vikunja API
+  description: Execute a raw Vikunja API request using the configured integration credentials.
+  fields:
+    method:
+      name: HTTP method
+      description: HTTP method (GET, POST, PUT, DELETE).
+      example: "POST"
+      required: true
+      selector:
+        text:
+    path:
+      name: API path
+      description: API path starting with /projects or /tasks (no base URL).
+      example: "/tasks/123"
+      required: true
+      selector:
+        text:
+    payload:
+      name: Payload
+      description: JSON payload for POST/PUT requests.
+      required: false
+      selector:
+        text:
+    entry_id:
+      name: Config entry ID
+      description: Optional config entry ID to target if multiple Vikunja entries exist.
+      required: false
+      selector:
+        text:

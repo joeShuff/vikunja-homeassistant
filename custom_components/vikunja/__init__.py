@@ -1,4 +1,6 @@
 import httpx
+import json
+import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
@@ -20,6 +22,16 @@ from .const import (
     CONF_KANBAN_VIEW_ID,
 )
 from .coordinator import VikunjaDataUpdateCoordinator
+
+SERVICE_CALL_API = "call_api"
+CALL_API_SCHEMA = vol.Schema(
+    {
+        vol.Required("method"): str,
+        vol.Required("path"): str,
+        vol.Optional("payload"): object,
+        vol.Optional("entry_id"): str,
+    }
+)
 
 PLATFORMS = [
     Platform.SENSOR,
@@ -69,6 +81,59 @@ async def async_setup_entry(hass, entry):
         "coordinator": coordinator
     }
 
+    if not hass.services.has_service(DOMAIN, SERVICE_CALL_API):
+        async def _handle_call_api(call):
+            entry_id = call.data.get("entry_id")
+            data_by_entry = hass.data.get(DOMAIN, {})
+            if entry_id:
+                entry_data = data_by_entry.get(entry_id)
+            else:
+                entry_data = next(iter(data_by_entry.values()), None)
+
+            if not entry_data or "api" not in entry_data:
+                LOGGER.error("Vikunja service call failed: no API instance available")
+                return
+
+            api = entry_data["api"]
+            method = str(call.data.get("method", "")).strip().upper()
+            path = str(call.data.get("path", "")).strip()
+
+            if not method or not path:
+                LOGGER.error("Vikunja service call failed: method/path required")
+                return
+
+            if path.startswith("http://") or path.startswith("https://"):
+                LOGGER.error("Vikunja service call failed: path must be relative")
+                return
+
+            if path.startswith("/api/v1"):
+                path = path[len("/api/v1"):]
+            if not path.startswith("/"):
+                path = f"/{path}"
+
+            payload_raw = call.data.get("payload")
+            payload = None
+            if payload_raw is not None:
+                if isinstance(payload_raw, str):
+                    try:
+                        payload = json.loads(payload_raw)
+                    except json.JSONDecodeError:
+                        payload = payload_raw
+                else:
+                    payload = payload_raw
+
+            if method in {"GET", "DELETE"}:
+                payload = None
+
+            await api._request(method, path, data=payload)
+
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_CALL_API,
+            _handle_call_api,
+            schema=CALL_API_SCHEMA,
+        )
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     LOGGER.info("Vikunja setup complete")
@@ -79,7 +144,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Remove Vikunja integration."""
     hass.data[DOMAIN].pop(entry.entry_id, None)
 
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unload_ok and not hass.data.get(DOMAIN) and hass.services.has_service(DOMAIN, SERVICE_CALL_API):
+        hass.services.async_remove(DOMAIN, SERVICE_CALL_API)
+    return unload_ok
 
 
 async def async_migrate_entry(hass, entry: config_entries.ConfigEntry) -> bool:

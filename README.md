@@ -107,6 +107,18 @@ If you want to use a kanban-style dashboard card, you can enable the optional ka
 2. Set **Kanban Project ID** and **Kanban View ID** (the view should be a kanban view).
 3. A new sensor will expose `buckets` and `tasks` attributes for the card.
 
+### Service: vikunja.call_api
+The integration also exposes a service for raw API calls. This is useful for custom cards that need to move or delete tasks without defining a separate `rest_command`.
+
+Example service call:
+```yaml
+service: vikunja.call_api
+data:
+  method: POST
+  path: /tasks/123
+  payload: '{"bucket_id": 10}'
+```
+
 ### Contributing
 **Note** I am considering committing this to become a core home assistant integration but using HACS as a quicker to market solution.
 
