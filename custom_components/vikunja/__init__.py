@@ -117,8 +117,11 @@ async def async_setup_entry(hass, entry):
                 if isinstance(payload_raw, str):
                     try:
                         payload = json.loads(payload_raw)
+                        if isinstance(payload, str):
+                            payload = json.loads(payload)
                     except json.JSONDecodeError:
-                        payload = payload_raw
+                        LOGGER.error("Vikunja service call failed: payload must be valid JSON")
+                        return
                 else:
                     payload = payload_raw
 
