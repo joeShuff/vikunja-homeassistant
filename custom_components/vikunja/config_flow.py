@@ -19,6 +19,8 @@ from .const import (
     CONF_STRICT_SSL,
     CONF_SELECTED_PROJECTS,
     CONF_ALL_PROJECTS,
+    CONF_KANBAN_PROJECT_ID,
+    CONF_KANBAN_VIEW_ID,
     LOGGER,
 )
 
@@ -26,7 +28,7 @@ from .const import (
 class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle the config flow for Vikunja integration."""
 
-    VERSION = 4
+    VERSION = 5
 
     def __init__(self):
         """Initialize the config flow."""
@@ -84,6 +86,8 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             **self._config_data,
                             CONF_SELECTED_PROJECTS: [CONF_ALL_PROJECTS],
                             CONF_HIDE_DONE: True,
+                            CONF_KANBAN_PROJECT_ID: None,
+                            CONF_KANBAN_VIEW_ID: None,
                         },
                     )
 
@@ -117,6 +121,8 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         **self._config_data,
                         CONF_SELECTED_PROJECTS: selected_projects,
                         CONF_HIDE_DONE: hide_done,
+                        CONF_KANBAN_PROJECT_ID: None,
+                        CONF_KANBAN_VIEW_ID: None,
                     },
                 )
 
@@ -207,6 +213,21 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
         """Initialize options flow."""
         self._available_projects = {}
 
+    @staticmethod
+    def _normalize_optional_int(value):
+        if value is None:
+            return None
+        if isinstance(value, str):
+            cleaned = value.strip()
+            if not cleaned:
+                return None
+            value = cleaned
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            return None
+        return parsed if parsed > 0 else None
+
     async def _fetch_projects(self) -> dict:
         """Fetch available projects from Vikunja API."""
         try:
@@ -230,22 +251,48 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             selected_projects = user_input.get(CONF_SELECTED_PROJECTS, [])
             new_hide_done = user_input.get(CONF_HIDE_DONE, True)
-            
-            if not selected_projects:
+            kanban_project_id = self._normalize_optional_int(
+                user_input.get(CONF_KANBAN_PROJECT_ID)
+            )
+            kanban_view_id = self._normalize_optional_int(
+                user_input.get(CONF_KANBAN_VIEW_ID)
+            )
+
+            if (kanban_project_id is None) ^ (kanban_view_id is None):
+                errors["base"] = "kanban_requires_project_and_view"
+
+            if not selected_projects and not errors:
                 errors["base"] = "no_projects_selected"
-            else:
+            elif not errors:
+                old_project_id = self._normalize_optional_int(
+                    self.config_entry.data.get(CONF_KANBAN_PROJECT_ID)
+                )
+                old_view_id = self._normalize_optional_int(
+                    self.config_entry.data.get(CONF_KANBAN_VIEW_ID)
+                )
+                needs_reload = (
+                    old_project_id != kanban_project_id
+                    or old_view_id != kanban_view_id
+                )
+
                 # Update all settings
                 data = {
                     **self.config_entry.data,
                     CONF_SECS_INTERVAL: user_input[CONF_SECS_INTERVAL],
                     CONF_HIDE_DONE: new_hide_done,
                     CONF_SELECTED_PROJECTS: selected_projects,
+                    CONF_KANBAN_PROJECT_ID: kanban_project_id,
+                    CONF_KANBAN_VIEW_ID: kanban_view_id,
                 }
 
                 self.hass.config_entries.async_update_entry(
                     self.config_entry,
                     data=data
                 )
+
+                if needs_reload:
+                    await self.hass.config_entries.async_reload(self.config_entry.entry_id)
+                    return self.async_create_entry(title="", data={})
 
                 # refresh coordinator to handle entity cleanup
                 hass_data = self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)
@@ -295,6 +342,18 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
                 ),
                 vol.Required(CONF_SECS_INTERVAL, default=self.config_entry.data.get(CONF_SECS_INTERVAL, 60)): int,
                 vol.Optional(CONF_HIDE_DONE, default=self.config_entry.data.get(CONF_HIDE_DONE, True)): bool,
+                vol.Optional(
+                    CONF_KANBAN_PROJECT_ID,
+                    default=self.config_entry.data.get(CONF_KANBAN_PROJECT_ID) or "",
+                ): selector.TextSelector(
+                    selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
+                ),
+                vol.Optional(
+                    CONF_KANBAN_VIEW_ID,
+                    default=self.config_entry.data.get(CONF_KANBAN_VIEW_ID) or "",
+                ): selector.TextSelector(
+                    selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
+                ),
             }),
             errors=errors,
             description_placeholders={"project_count": str(len(self._available_projects))},

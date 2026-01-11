@@ -1,6 +1,12 @@
 from pyvikunja.api import VikunjaAPI
 
-from custom_components.vikunja.const import LOGGER
+from custom_components.vikunja.const import (
+    CONF_KANBAN_PROJECT_ID,
+    CONF_KANBAN_VIEW_ID,
+    DATA_TASKS_KEY,
+    LOGGER,
+)
+from custom_components.vikunja.sensors.kanban_sensor import VikunjaKanbanSensor
 from custom_components.vikunja.sensors.TaskSensors import *
 
 
@@ -35,6 +41,10 @@ async def async_setup_entry(hass, entry, async_add_entities):
     for task_id in tasks:
         LOGGER.info(f"Task is {task_id}")
         entities.extend(get_sensors_for_task(coordinator, vikunja_api.web_ui_link, task_id))
+
+    kanban_project_id = entry.data.get(CONF_KANBAN_PROJECT_ID)
+    kanban_view_id = entry.data.get(CONF_KANBAN_VIEW_ID)
+    entities.append(VikunjaKanbanSensor(coordinator, kanban_project_id, kanban_view_id))
 
     if not entities:
         LOGGER.warning("No entities created")

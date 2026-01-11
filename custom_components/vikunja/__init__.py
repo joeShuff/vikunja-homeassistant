@@ -16,6 +16,8 @@ from .const import (
     CONF_STRICT_SSL,
     CONF_SELECTED_PROJECTS,
     CONF_ALL_PROJECTS,
+    CONF_KANBAN_PROJECT_ID,
+    CONF_KANBAN_VIEW_ID,
 )
 from .coordinator import VikunjaDataUpdateCoordinator
 
@@ -100,6 +102,12 @@ async def async_migrate_entry(hass, entry: config_entries.ConfigEntry) -> bool:
         # Add selected_projects with "all projects" as default for existing installations
         new_data[CONF_SELECTED_PROJECTS] = [CONF_ALL_PROJECTS]
         new_version = 4
+
+    if entry.version < 5:
+        LOGGER.debug("Migrating Vikunja to config v5")
+        new_data[CONF_KANBAN_PROJECT_ID] = None
+        new_data[CONF_KANBAN_VIEW_ID] = None
+        new_version = 5
 
     hass.config_entries.async_update_entry(entry, data=new_data, version=new_version)
     return True

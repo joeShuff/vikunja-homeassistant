@@ -46,12 +46,15 @@
         "data": {
           "selected_projects": "Projects to Sync",
           "seconds_interval": "Update Interval (seconds)",
-          "hide_done": "Hide Completed Tasks"
+          "hide_done": "Hide Completed Tasks",
+          "kanban_project_id": "Kanban Project ID (optional)",
+          "kanban_view_id": "Kanban View ID (optional)"
         }
       }
     },
     "error": {
-      "no_projects_selected": "Please select at least one project to sync."
+      "no_projects_selected": "Please select at least one project to sync.",
+      "kanban_requires_project_and_view": "Kanban requires both project ID and view ID."
     }
   }
 }

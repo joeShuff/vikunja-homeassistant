@@ -100,6 +100,13 @@ You will also find that each "Project" in Vikunja has created a Todo List in HA.
 And you can Create/Update/Complete tasks from the Todo section
 ![todo_item.png](art/todo_item.png)
 
+### Kanban Sensor (for dashboard cards)
+If you want to use a kanban-style dashboard card, you can enable the optional kanban sensor:
+
+1. Open the Vikunja integration options.
+2. Set **Kanban Project ID** and **Kanban View ID** (the view should be a kanban view).
+3. A new sensor will expose `buckets` and `tasks` attributes for the card.
+
 ### Contributing
 **Note** I am considering committing this to become a core home assistant integration but using HACS as a quicker to market solution.
 

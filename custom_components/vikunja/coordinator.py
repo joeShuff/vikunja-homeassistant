@@ -9,9 +9,12 @@ from custom_components.vikunja import LOGGER
 from custom_components.vikunja.const import (
     DATA_PROJECTS_KEY,
     DATA_TASKS_KEY,
+    DATA_KANBAN_KEY,
     CONF_HIDE_DONE,
     CONF_SELECTED_PROJECTS,
     CONF_ALL_PROJECTS,
+    CONF_KANBAN_PROJECT_ID,
+    CONF_KANBAN_VIEW_ID,
 )
 from custom_components.vikunja.util import remove_task_with_entities, remove_project_entities
 
@@ -43,6 +46,20 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
         
         # Check if this specific project is in the selected list
         return str(project_id) in selected_projects
+
+    def _normalize_optional_int(self, value):
+        if value is None:
+            return None
+        if isinstance(value, str):
+            cleaned = value.strip()
+            if not cleaned:
+                return None
+            value = cleaned
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            return None
+        return parsed if parsed > 0 else None
 
     async def _async_update_data(self):
         """Fetch data from Vikunja API."""
@@ -81,6 +98,40 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
 
                 LOGGER.info(f"Fetched {len(tasks)} tasks from selected projects.")
                 result[DATA_TASKS_KEY] = tasks
+
+                kanban_project_id = self._normalize_optional_int(
+                    self._config_entry.data.get(CONF_KANBAN_PROJECT_ID)
+                )
+                kanban_view_id = self._normalize_optional_int(
+                    self._config_entry.data.get(CONF_KANBAN_VIEW_ID)
+                )
+                result[DATA_KANBAN_KEY] = None
+                if kanban_project_id and kanban_view_id:
+                    response = await self._vikunja_api._request(
+                        "GET",
+                        f"/projects/{kanban_project_id}/views/{kanban_view_id}/tasks",
+                    )
+                    if response and isinstance(response.get("data"), list):
+                        buckets = response["data"]
+                        kanban_tasks = []
+                        for bucket in buckets:
+                            bucket_tasks = bucket.get("tasks") if isinstance(bucket, dict) else None
+                            if not isinstance(bucket_tasks, list):
+                                bucket_tasks = []
+                            if skip_done:
+                                bucket_tasks = [
+                                    task for task in bucket_tasks
+                                    if not task.get("done")
+                                ]
+                                if isinstance(bucket, dict):
+                                    bucket["tasks"] = bucket_tasks
+                            kanban_tasks.extend(bucket_tasks)
+                        result[DATA_KANBAN_KEY] = {
+                            "project_id": kanban_project_id,
+                            "view_id": kanban_view_id,
+                            "buckets": buckets,
+                            "tasks": kanban_tasks,
+                        }
 
                 # Calculate new and removed items
                 new_tasks = set(result[DATA_TASKS_KEY].keys()) - current_tasks
