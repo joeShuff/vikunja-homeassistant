@@ -4,6 +4,7 @@ from custom_components.vikunja.const import (
     CONF_KANBAN_PROJECT_ID,
     CONF_KANBAN_VIEW_ID,
     DATA_TASKS_KEY,
+    DOMAIN,
     LOGGER,
 )
 from custom_components.vikunja.sensors.kanban_sensor import VikunjaKanbanSensor
@@ -44,7 +45,9 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
     kanban_project_id = entry.data.get(CONF_KANBAN_PROJECT_ID)
     kanban_view_id = entry.data.get(CONF_KANBAN_VIEW_ID)
-    entities.append(VikunjaKanbanSensor(coordinator, kanban_project_id, kanban_view_id))
+    entities.append(
+        VikunjaKanbanSensor(coordinator, kanban_project_id, kanban_view_id, entry.entry_id)
+    )
 
     if not entities:
         LOGGER.warning("No entities created")

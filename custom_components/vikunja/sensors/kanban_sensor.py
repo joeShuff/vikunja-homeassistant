@@ -8,14 +8,21 @@ class VikunjaKanbanSensor(CoordinatorEntity, SensorEntity):
     _attr_icon = "mdi:view-kanban"
     _attr_has_entity_name = True
 
-    def __init__(self, coordinator, project_id: int | None, view_id: int | None) -> None:
+    def __init__(
+        self,
+        coordinator,
+        project_id: int | None,
+        view_id: int | None,
+        entry_id: str,
+    ) -> None:
         super().__init__(coordinator)
         self._project_id = project_id
         self._view_id = view_id
+        self._entry_id = entry_id
         if project_id and view_id:
-            self._attr_unique_id = f"kanban_{project_id}_{view_id}"
+            self._attr_unique_id = f"kanban_{entry_id}_{project_id}_{view_id}"
         else:
-            self._attr_unique_id = "kanban_unconfigured"
+            self._attr_unique_id = f"kanban_unconfigured_{entry_id}"
 
     @property
     def name(self) -> str:
