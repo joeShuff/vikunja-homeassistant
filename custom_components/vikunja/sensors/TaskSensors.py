@@ -48,7 +48,7 @@ class VikunjaTaskNameSensor(VikunjaTaskEntity, SensorEntity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self.task.title
+        return (self.task.title or "")[:255]
 
     @property
     def icon(self):
@@ -74,7 +74,7 @@ class VikunjaTaskDescriptionSensor(VikunjaTaskEntity, SensorEntity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self.task.description
+        return (self.task.description or "")[:255]
 
     @property
     def icon(self):
@@ -330,7 +330,7 @@ class VikunjaTaskAssigneeSensor(VikunjaTaskEntity, SensorEntity):
     def state(self):
         """Return the state of the sensor."""
         if self.task.assignees:
-            return ", ".join(self._get_assignee_display_name(assignee) for assignee in self.task.assignees)
+            return (", ".join(self._get_assignee_display_name(assignee) for assignee in self.task.assignees))[:255]
         return "Unassigned"
     
     def _get_assignee_display_name(self, assignee):
