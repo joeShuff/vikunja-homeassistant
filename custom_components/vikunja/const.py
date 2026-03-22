@@ -9,6 +9,7 @@ CONF_SECS_INTERVAL = "seconds_interval"
 CONF_HIDE_DONE = "hide_done"
 CONF_STRICT_SSL = "strict_ssl"
 CONF_SELECTED_PROJECTS = "selected_projects"
+CONF_TASKS_AS_DEVICES = "tasks_as_devices"
 
 # Special value to indicate all projects should be synced
 CONF_ALL_PROJECTS = "__all__"

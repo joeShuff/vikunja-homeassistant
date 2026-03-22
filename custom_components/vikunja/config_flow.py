@@ -10,6 +10,7 @@ from pyvikunja.api import VikunjaAPI
 
 from . import VikunjaDataUpdateCoordinator
 from .const import (
+    CONF_TASKS_AS_DEVICES,
     DOMAIN,
     CONF_BASE_URL,
     CONF_TOKEN,
@@ -107,6 +108,7 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             selected_projects = user_input.get(CONF_SELECTED_PROJECTS, [])
             hide_done = user_input.get(CONF_HIDE_DONE, True)
+            tasks_as_devices = user_input.get(CONF_TASKS_AS_DEVICES, True)
             
             if not selected_projects:
                 errors["base"] = "no_projects_selected"
@@ -117,6 +119,7 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         **self._config_data,
                         CONF_SELECTED_PROJECTS: selected_projects,
                         CONF_HIDE_DONE: hide_done,
+                        CONF_TASKS_AS_DEVICES: tasks_as_devices,
                     },
                 )
 
@@ -140,6 +143,7 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     )
                 ),
                 vol.Optional(CONF_HIDE_DONE, default=True): bool,
+                vol.Optional(CONF_TASKS_AS_DEVICES, default=True): bool,
             }),
             errors=errors,
             description_placeholders={"project_count": str(len(self._available_projects))},
