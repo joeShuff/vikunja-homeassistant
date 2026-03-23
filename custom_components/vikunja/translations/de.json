@@ -16,7 +16,8 @@
         "description": "Wählen Sie aus, welche Vikunja-Projekte mit Home Assistant synchronisiert werden sollen.",
         "data": {
           "selected_projects": "Zu synchronisierende Projekte",
-          "hide_done": "Erledigte Aufgaben ausblenden"
+          "hide_done": "Erledigte Aufgaben ausblenden",
+          "tasks_as_devices": "Erstelle Aufgaben als Geräte"
         }
       },
       "reconfigure": {
