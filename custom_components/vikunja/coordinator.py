@@ -25,7 +25,6 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
         self._hass = hass
         self._vikunja_api = vikunja_api
         self._config_id = config_entry.entry_id
-        self._config_entry = config_entry
 
         super().__init__(
             hass,
@@ -37,7 +36,7 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
 
     def _is_project_selected(self, project_id: int) -> bool:
         """Check if a project is selected for synchronization."""
-        selected_projects = self._config_entry.data.get(CONF_SELECTED_PROJECTS, [CONF_ALL_PROJECTS])
+        selected_projects = self.config_entry.data.get(CONF_SELECTED_PROJECTS, [CONF_ALL_PROJECTS])
         
         # If "all projects" is selected, include all projects
         if CONF_ALL_PROJECTS in selected_projects:
@@ -61,7 +60,7 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
                 # Get current projects and tasks, defaulting to empty sets
                 has_data = self.data is not None
 
-                skip_done = self._config_entry.data.get(CONF_HIDE_DONE) or False
+                skip_done = self.config_entry.data.get(CONF_HIDE_DONE) or False
 
                 current_projects = set(self.data[DATA_PROJECTS_KEY].keys()) if self.data else set()
                 current_tasks = set(self.data[DATA_TASKS_KEY].keys()) if self.data else set()

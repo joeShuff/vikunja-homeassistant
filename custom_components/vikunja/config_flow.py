@@ -256,7 +256,7 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
                 # refresh coordinator to handle entity cleanup
                 hass_data = self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)
                 if hass_data and "coordinator" in hass_data:
-                    coordinator = hass_data["coordinator"]
+                    coordinator: VikunjaDataUpdateCoordinator = hass_data["coordinator"]
                     await coordinator.async_refresh()
                 else:
                     # Fallback: reload the config entry if coordinator not available
