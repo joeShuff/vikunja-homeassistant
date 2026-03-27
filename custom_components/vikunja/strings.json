@@ -47,7 +47,8 @@
         "data": {
           "selected_projects": "Projects to Sync",
           "seconds_interval": "Update Interval (seconds)",
-          "hide_done": "Hide Completed Tasks"
+          "hide_done": "Hide Completed Tasks",
+          "tasks_as_devices": "Create tasks as devices"
         }
       }
     },

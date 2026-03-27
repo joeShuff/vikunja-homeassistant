@@ -234,6 +234,7 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             selected_projects = user_input.get(CONF_SELECTED_PROJECTS, [])
             new_hide_done = user_input.get(CONF_HIDE_DONE, True)
+            tasks_as_devices = user_input.get(CONF_TASKS_AS_DEVICES, True)
             
             if not selected_projects:
                 errors["base"] = "no_projects_selected"
@@ -243,6 +244,7 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
                     **self.config_entry.data,
                     CONF_SECS_INTERVAL: user_input[CONF_SECS_INTERVAL],
                     CONF_HIDE_DONE: new_hide_done,
+                    CONF_TASKS_AS_DEVICES: tasks_as_devices,
                     CONF_SELECTED_PROJECTS: selected_projects,
                 }
 
@@ -299,6 +301,7 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
                 ),
                 vol.Required(CONF_SECS_INTERVAL, default=self.config_entry.data.get(CONF_SECS_INTERVAL, 60)): int,
                 vol.Optional(CONF_HIDE_DONE, default=self.config_entry.data.get(CONF_HIDE_DONE, True)): bool,
+                vol.Optional(CONF_TASKS_AS_DEVICES, default=self.config_entry.data.get(CONF_TASKS_AS_DEVICES, True)): bool,
             }),
             errors=errors,
             description_placeholders={"project_count": str(len(self._available_projects))},
