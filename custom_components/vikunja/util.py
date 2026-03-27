@@ -1,3 +1,4 @@
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import device_registry as dr
 
@@ -52,3 +53,11 @@ async def remove_project_entities(hass, config_id, project_id):
     for device_id in devices_to_check:
         LOGGER.info(f"Removing device: {device_id}")
         dev_reg.async_remove_device(device_id)
+
+def has_task_devices_entries(hass: HomeAssistant, config_id: str) -> bool:
+    entity_registry = er.async_get(hass)
+    entities = entity_registry.entities.get_entries_for_config_entry_id(config_id)
+    return any([entity for entity in entities if is_task_registry_entity(entity)])
+
+def is_task_registry_entity(entry: er.RegistryEntry) -> bool:
+    return entry.unique_id.startswith(f"task_")
