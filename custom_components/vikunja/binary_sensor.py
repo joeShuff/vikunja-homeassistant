@@ -1,9 +1,13 @@
+from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import ConfigEntry
+
 from pyvikunja.api import VikunjaAPI
 from pyvikunja.models.task import Task
 
 from custom_components.vikunja import LOGGER
 from custom_components.vikunja.const import DATA_TASKS_KEY, DOMAIN
 from custom_components.vikunja.sensors.TaskSensors import VikunjaTaskDoneSensor, VikunjaTaskOverdueSensor
+from custom_components.vikunja.const import CONF_TASKS_AS_DEVICES
 
 
 def get_binary_sensors_for_task(coordinator, base_url, task_id):
@@ -13,7 +17,7 @@ def get_binary_sensors_for_task(coordinator, base_url, task_id):
     ]
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
     LOGGER.info("Setting up Vikunja sensors...")
 
     # Get stored API instance and fetched data
@@ -28,11 +32,11 @@ async def async_setup_entry(hass, entry, async_add_entities):
     # Create sensor entities
     entities = []
 
-    tasks = coordinator.data[DATA_TASKS_KEY].keys()
-
-    for task_id in tasks:
-        LOGGER.info(f"Task is {task_id}")
-        entities.extend(get_binary_sensors_for_task(coordinator, vikunja_api.web_ui_link, task_id))
+    if entry.data.get(CONF_TASKS_AS_DEVICES, True):
+        tasks = coordinator.data[DATA_TASKS_KEY].keys()
+        for task_id in tasks:
+            LOGGER.info(f"Task is {task_id}")
+            entities.extend(get_binary_sensors_for_task(coordinator, vikunja_api.web_ui_link, task_id))
 
     if not entities:
         LOGGER.warning("No entities created")

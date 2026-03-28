@@ -16,7 +16,8 @@
         "description": "Kies welke Vikunja projecten gesynchroniseerd moeten worden met Home Assistant.",
         "data": {
           "selected_projects": "Projecten om te Synchroniseren",
-          "hide_done": "Verberg voltooide taken"
+          "hide_done": "Verberg voltooide taken",
+          "tasks_as_devices": "Maak taken aan als apparaten"
         }
       },
       "reconfigure": {
@@ -46,7 +47,8 @@
         "data": {
           "selected_projects": "Projecten om te Synchroniseren",
           "seconds_interval": "Update Interval (seconden)",
-          "hide_done": "Verberg voltooide taken"
+          "hide_done": "Verberg voltooide taken",
+          "tasks_as_devices": "Maak taken aan als apparaten"
         }
       }
     },

@@ -10,6 +10,7 @@ from pyvikunja.api import VikunjaAPI
 
 from . import VikunjaDataUpdateCoordinator
 from .const import (
+    CONF_TASKS_AS_DEVICES,
     DOMAIN,
     CONF_BASE_URL,
     CONF_TOKEN,
@@ -107,6 +108,7 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             selected_projects = user_input.get(CONF_SELECTED_PROJECTS, [])
             hide_done = user_input.get(CONF_HIDE_DONE, True)
+            tasks_as_devices = user_input.get(CONF_TASKS_AS_DEVICES, True)
             
             if not selected_projects:
                 errors["base"] = "no_projects_selected"
@@ -117,6 +119,7 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         **self._config_data,
                         CONF_SELECTED_PROJECTS: selected_projects,
                         CONF_HIDE_DONE: hide_done,
+                        CONF_TASKS_AS_DEVICES: tasks_as_devices,
                     },
                 )
 
@@ -140,6 +143,7 @@ class VikunjaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     )
                 ),
                 vol.Optional(CONF_HIDE_DONE, default=True): bool,
+                vol.Optional(CONF_TASKS_AS_DEVICES, default=True): bool,
             }),
             errors=errors,
             description_placeholders={"project_count": str(len(self._available_projects))},
@@ -230,6 +234,7 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             selected_projects = user_input.get(CONF_SELECTED_PROJECTS, [])
             new_hide_done = user_input.get(CONF_HIDE_DONE, True)
+            tasks_as_devices = user_input.get(CONF_TASKS_AS_DEVICES, True)
             
             if not selected_projects:
                 errors["base"] = "no_projects_selected"
@@ -239,6 +244,7 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
                     **self.config_entry.data,
                     CONF_SECS_INTERVAL: user_input[CONF_SECS_INTERVAL],
                     CONF_HIDE_DONE: new_hide_done,
+                    CONF_TASKS_AS_DEVICES: tasks_as_devices,
                     CONF_SELECTED_PROJECTS: selected_projects,
                 }
 
@@ -250,7 +256,7 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
                 # refresh coordinator to handle entity cleanup
                 hass_data = self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)
                 if hass_data and "coordinator" in hass_data:
-                    coordinator = hass_data["coordinator"]
+                    coordinator: VikunjaDataUpdateCoordinator = hass_data["coordinator"]
                     await coordinator.async_refresh()
                 else:
                     # Fallback: reload the config entry if coordinator not available
@@ -295,6 +301,7 @@ class VikunjaOptionsFlow(config_entries.OptionsFlow):
                 ),
                 vol.Required(CONF_SECS_INTERVAL, default=self.config_entry.data.get(CONF_SECS_INTERVAL, 60)): int,
                 vol.Optional(CONF_HIDE_DONE, default=self.config_entry.data.get(CONF_HIDE_DONE, True)): bool,
+                vol.Optional(CONF_TASKS_AS_DEVICES, default=self.config_entry.data.get(CONF_TASKS_AS_DEVICES, True)): bool,
             }),
             errors=errors,
             description_placeholders={"project_count": str(len(self._available_projects))},

@@ -16,7 +16,8 @@
         "description": "Elige qué proyectos de Vikunja sincronizar con Home Assistant.",
         "data": {
           "selected_projects": "Proyectos a Sincronizar",
-          "hide_done": "Ocultar Tareas Completadas"
+          "hide_done": "Ocultar Tareas Completadas",
+          "tasks_as_devices": "Crear tareas como dispositivos"
         }
       },
       "reconfigure": {
@@ -46,7 +47,8 @@
         "data": {
           "selected_projects": "Proyectos a Sincronizar",
           "seconds_interval": "Intervalo de Actualización (segundos)",
-          "hide_done": "Ocultar Tareas Completadas"
+          "hide_done": "Ocultar Tareas Completadas",
+          "tasks_as_devices": "Crear tareas como dispositivos"
         }
       }
     },

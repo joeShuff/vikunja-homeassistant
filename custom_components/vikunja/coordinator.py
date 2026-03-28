@@ -7,13 +7,14 @@ from pyvikunja.api import VikunjaAPI, APIError
 
 from custom_components.vikunja import LOGGER
 from custom_components.vikunja.const import (
+    CONF_TASKS_AS_DEVICES,
     DATA_PROJECTS_KEY,
     DATA_TASKS_KEY,
     CONF_HIDE_DONE,
     CONF_SELECTED_PROJECTS,
     CONF_ALL_PROJECTS,
 )
-from custom_components.vikunja.util import remove_task_with_entities, remove_project_entities
+from .util import remove_task_with_entities, remove_project_entities, has_task_devices_entries
 
 
 class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
@@ -24,18 +25,18 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
         self._hass = hass
         self._vikunja_api = vikunja_api
         self._config_id = config_entry.entry_id
-        self._config_entry = config_entry
 
         super().__init__(
             hass,
             LOGGER,
+            config_entry=config_entry,
             name="Vikunja Coordinator",
             update_interval=timedelta(seconds=seconds_interval),
         )
 
     def _is_project_selected(self, project_id: int) -> bool:
         """Check if a project is selected for synchronization."""
-        selected_projects = self._config_entry.data.get(CONF_SELECTED_PROJECTS, [CONF_ALL_PROJECTS])
+        selected_projects = self.config_entry.data.get(CONF_SELECTED_PROJECTS, [CONF_ALL_PROJECTS])
         
         # If "all projects" is selected, include all projects
         if CONF_ALL_PROJECTS in selected_projects:
@@ -59,7 +60,7 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
                 # Get current projects and tasks, defaulting to empty sets
                 has_data = self.data is not None
 
-                skip_done = self._config_entry.data.get(CONF_HIDE_DONE) or False
+                skip_done = self.config_entry.data.get(CONF_HIDE_DONE) or False
 
                 current_projects = set(self.data[DATA_PROJECTS_KEY].keys()) if self.data else set()
                 current_tasks = set(self.data[DATA_TASKS_KEY].keys()) if self.data else set()
@@ -87,6 +88,15 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
                 removed_tasks = current_tasks - set(tasks)
                 new_projects = set(result[DATA_PROJECTS_KEY].keys()) - current_projects
                 removed_projects = current_projects - set(result[DATA_PROJECTS_KEY].keys())
+
+                # Detect changes to the tasks as devices setting, and populate the new/removed
+                # tasksaccordingly to update the device and entity registries
+                should_have_task_devices = self.config_entry.data.get(CONF_TASKS_AS_DEVICES, True)
+                has_task_devices = has_task_devices_entries(self.hass, self.config_entry.entry_id)
+                if should_have_task_devices and not has_task_devices:
+                    new_tasks = set(result[DATA_TASKS_KEY].keys())
+                elif not should_have_task_devices and has_task_devices:
+                    removed_tasks = set(result[DATA_TASKS_KEY].keys())
 
                 # Reload only if new tasks or projects exist
                 if has_data and (new_tasks or new_projects):
