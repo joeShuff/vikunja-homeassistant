@@ -14,6 +14,8 @@ def get_sensors_for_task(coordinator, base_url, task_id):
         VikunjaTaskDueDateSensor(coordinator, base_url, task_id),
         VikunjaTaskPrioritySensor(coordinator, base_url, task_id),
         VikunjaTaskAssigneeSensor(coordinator, base_url, task_id)
+        VikunjaTaskAssigneeSensor(coordinator, base_url, task_id),
+        VikunjaTaskLabelsSensor(coordinator, base_url, task_id),
     ]
 
 
