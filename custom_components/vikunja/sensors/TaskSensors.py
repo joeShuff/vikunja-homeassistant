@@ -368,11 +368,16 @@ class VikunjaTaskLabelsSensor(VikunjaTaskEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         """Expose full label detail for use in automations and templates."""
-        labels = sorted(self.task.labels, key=lambda label: label.title)
+        labels = sorted(self.task.labels, key=lambda label: label.id)
         return {
-            "label_ids": [label.id for label in labels],
-            "label_titles": [label.title for label in labels],
-            "label_colors": [label.hex_color for label in labels],
+            "labels": [
+                {
+                    "id": label.id,
+                    "title": label.title,
+                    "color": label.hex_color,
+                }
+                for label in labels
+            ]
         }
 
     @property
