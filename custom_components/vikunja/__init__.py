@@ -39,7 +39,7 @@ async def async_setup_entry(hass, entry):
     base_url = entry.data.get(CONF_BASE_URL) or ""
     token = entry.data.get(CONF_TOKEN) or ""
     secs_interval = entry.data.get(CONF_SECS_INTERVAL) or 60
-    strict_ssl = entry.data.get(CONF_STRICT_SSL) or True
+    strict_ssl = entry.data.get(CONF_STRICT_SSL, True)
 
     if not base_url or not token:
         LOGGER.error("Base URL or token is missing")
