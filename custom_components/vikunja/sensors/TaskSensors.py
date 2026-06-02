@@ -345,3 +345,46 @@ class VikunjaTaskAssigneeSensor(VikunjaTaskEntity, SensorEntity):
     @property
     def unique_id(self) -> str:
         return self.id_prefix() + "_assignees"
+
+class VikunjaTaskLabelsSensor(VikunjaTaskEntity, SensorEntity):
+    """Representation of a Vikunja Task labels sensor."""
+
+    def __init__(self, coordinator, base_url, task_id):
+        super().__init__(coordinator, base_url, task_id)
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return f"{self.name_prefix()} Labels"
+
+    @property
+    def state(self):
+        """Return a comma-separated list of label titles (max 255 chars)."""
+        if self.task.labels:
+            titles = sorted(label.title for label in self.task.labels)
+            return (", ".join(titles))[:255]
+        return "No labels"
+
+    @property
+    def extra_state_attributes(self):
+        """Expose full label detail for use in automations and templates."""
+        labels = sorted(self.task.labels, key=lambda label: label.id)
+        return {
+            "labels": [
+                {
+                    "id": label.id,
+                    "title": label.title,
+                    "color": label.hex_color,
+                }
+                for label in labels
+            ]
+        }
+
+    @property
+    def icon(self):
+        """Icon for the sensor."""
+        return "mdi:tag-multiple"
+
+    @property
+    def unique_id(self) -> str:
+        return self.id_prefix() + "_labels"
