@@ -67,7 +67,7 @@ class VikunjaTaskTodoListEntity(
             TodoListEntityFeature.UPDATE_TODO_ITEM |
             TodoListEntityFeature.DELETE_TODO_ITEM |
             # TodoListEntityFeature.MOVE_TODO_ITEM |
-            TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM |
+            # TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM |
             TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
     )
 
