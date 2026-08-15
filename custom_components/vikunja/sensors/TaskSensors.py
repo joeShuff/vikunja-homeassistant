@@ -152,10 +152,6 @@ class VikunjaTaskDueDateSensor(VikunjaTaskEntity, SensorEntity):
         super().__init__(coordinator, base_url, task_id)
 
     @property
-    def available(self) -> bool:
-        return self.task.due_date is not None
-
-    @property
     def name(self):
         """Return the name of the sensor."""
         return f"{self.name_prefix()} Due Date"
@@ -163,7 +159,7 @@ class VikunjaTaskDueDateSensor(VikunjaTaskEntity, SensorEntity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self.task.due_date.isoformat() if self.task.due_date else "N/A"
+        return self.task.due_date.isoformat() if self.task.due_date else None
 
     @property
     def icon(self):
@@ -230,10 +226,6 @@ class VikunjaTaskStartDateSensor(VikunjaTaskEntity, DateTimeEntity):
         super().__init__(coordinator, base_url, task_id)
 
     @property
-    def available(self) -> bool:
-        return self.task.start_date is not None
-
-    @property
     def name(self):
         """Return the name of the sensor."""
         return f"{self.name_prefix()} Start Date"
@@ -241,7 +233,7 @@ class VikunjaTaskStartDateSensor(VikunjaTaskEntity, DateTimeEntity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self.task.start_date.isoformat() if self.task.start_date else "N/A"
+        return self.task.start_date.isoformat() if self.task.start_date else None
 
     @property
     def icon(self):
@@ -265,10 +257,6 @@ class VikunjaTaskEndDateSensor(VikunjaTaskEntity, DateTimeEntity):
         super().__init__(coordinator, base_url, task_id)
 
     @property
-    def available(self) -> bool:
-        return self.task.end_date is not None
-
-    @property
     def name(self):
         """Return the name of the sensor."""
         return f"{self.name_prefix()} End Date"
@@ -276,7 +264,7 @@ class VikunjaTaskEndDateSensor(VikunjaTaskEntity, DateTimeEntity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self.task.end_date.isoformat() if self.task.end_date else "N/A"
+        return self.task.end_date.isoformat() if self.task.end_date else None
 
     @property
     def icon(self):
