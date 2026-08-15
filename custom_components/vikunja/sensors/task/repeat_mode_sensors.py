@@ -105,12 +105,18 @@ class VikunjaRepeatModeSelect(VikunjaTaskEntity, SelectEntity):
 
     @property
     def options(self):
+        if not self.task.repeat_enabled:
+            return []
+
         return list(REPEAT_MODE_OPTIONS.values())
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        return REPEAT_MODE_OPTIONS.get(self.task.repeat_mode, "None")
+        if not self.task.repeat_enabled:
+            return None
+
+        return REPEAT_MODE_OPTIONS.get(self.task.repeat_mode, None)
 
     async def async_select_option(self, option: str):
         """Handle user selection of a new repeat mode."""
@@ -165,7 +171,11 @@ class VikunjaRepeatIntervalSizeSensor(VikunjaTaskEntity, NumberEntity):
     @property
     def native_value(self) -> float:
         """Return the value of the sensor."""
+        if not self.task.repeat_enabled:
+            return None
+
         unit, scaled_value = get_repeat_info_for_task(self.task)
+
         return scaled_value
 
     @property
@@ -212,6 +222,9 @@ class VikunjaRepeatIntervalUnitSensor(VikunjaTaskEntity, SelectEntity):
 
     @property
     def options(self):
+        if not self.task.repeat_enabled:
+            return []
+
         return RepeatUnit.list_display_values()
 
     @property
