@@ -171,7 +171,7 @@ class VikunjaRepeatIntervalSizeSensor(VikunjaTaskEntity, NumberEntity):
     @property
     def native_value(self) -> float:
         """Return the value of the sensor."""
-        if not self.task.repeat_enabled:
+        if not self.task.repeat_enabled or self.task.repeat_mode == RepeatMode.MONTHLY:
             return None
 
         unit, scaled_value = get_repeat_info_for_task(self.task)
@@ -192,6 +192,9 @@ class VikunjaRepeatIntervalSizeSensor(VikunjaTaskEntity, NumberEntity):
     @property
     def native_unit_of_measurement(self):
         """Return the unit of measurement of the sensor."""
+        if not self.task.repeat_enabled or self.task.repeat_mode == RepeatMode.MONTHLY:
+            return None
+
         unit, scaled_value = get_repeat_info_for_task(self.task)
 
         if unit is None or scaled_value is None:
@@ -222,7 +225,7 @@ class VikunjaRepeatIntervalUnitSensor(VikunjaTaskEntity, SelectEntity):
 
     @property
     def options(self):
-        if not self.task.repeat_enabled:
+        if not self.task.repeat_enabled or self.task.repeat_mode == RepeatMode.MONTHLY:
             return []
 
         return RepeatUnit.list_display_values()
@@ -235,6 +238,9 @@ class VikunjaRepeatIntervalUnitSensor(VikunjaTaskEntity, SelectEntity):
     @property
     def state(self):
         """Return the state of the sensor."""
+        if not self.task.repeat_enabled or self.task.repeat_mode == RepeatMode.MONTHLY:
+            return None
+
         unit, scaled_value = get_repeat_info_for_task(self.task)
 
         if unit is None:
