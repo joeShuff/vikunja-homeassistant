@@ -112,13 +112,12 @@ class VikunjaRepeatModeSelect(VikunjaTaskEntity, SelectEntity):
         """Return the state of the sensor."""
         return REPEAT_MODE_OPTIONS.get(self.task.repeat_mode, "None")
 
-    @property
-    def available(self) -> bool:
-        return self.task.repeat_enabled
-
     async def async_select_option(self, option: str):
         """Handle user selection of a new repeat mode."""
-        mode_value = next((k for k, v in REPEAT_MODE_OPTIONS.items() if v == option), None)
+        mode_value = next(
+            (k for k, v in REPEAT_MODE_OPTIONS.items() if v == option),
+            None
+        )
         await self.task.set_repeating_interval(mode=RepeatMode(mode_value))
         await self.update_task()
 
@@ -171,7 +170,10 @@ class VikunjaRepeatIntervalSizeSensor(VikunjaTaskEntity, NumberEntity):
 
     @property
     def native_max_value(self) -> float:
-        return 999999999
+        if self.task.repeat_mode == RepeatMode.MONTHLY:
+            return 1
+        else:
+            return 999999999
 
     @property
     def native_min_value(self) -> float:
@@ -190,16 +192,6 @@ class VikunjaRepeatIntervalSizeSensor(VikunjaTaskEntity, NumberEntity):
     @property
     def mode(self) -> NumberMode:
         return NumberMode.BOX
-
-    @property
-    def available(self) -> bool:
-        if not self.task.repeat_enabled:
-            return False
-
-        if self.task.repeat_mode == RepeatMode.MONTHLY:
-            return False
-        else:
-            return True
 
     @property
     def icon(self):
@@ -256,16 +248,6 @@ class VikunjaRepeatIntervalUnitSensor(VikunjaTaskEntity, SelectEntity):
         # Send update
         await self.task.set_repeating_interval(interval=timedelta(seconds=new_value))
         await self.update_task()
-
-    @property
-    def available(self) -> bool:
-        if not self.task.repeat_enabled:
-            return False
-
-        if self.task.repeat_mode == RepeatMode.MONTHLY:
-            return False
-        else:
-            return True
 
     @property
     def icon(self):
