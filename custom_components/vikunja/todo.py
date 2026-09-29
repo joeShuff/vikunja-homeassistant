@@ -12,7 +12,7 @@ from pyvikunja.models.project import Project
 from pyvikunja.models.task import Task
 
 from custom_components.vikunja import VikunjaDataUpdateCoordinator, DOMAIN, LOGGER
-from custom_components.vikunja.const import DATA_PROJECTS_KEY, DATA_TASKS_KEY
+from custom_components.vikunja.const import DATA_PROJECTS_KEY, DATA_TASKS_KEY, DATA_PROJECT_TASKS_KEY
 
 
 async def async_setup_entry(
@@ -62,14 +62,6 @@ class VikunjaTaskTodoListEntity(
     """A To-do List representation of the Shopping List."""
 
     _attr_has_entity_name = True
-    _attr_supported_features = (
-            TodoListEntityFeature.CREATE_TODO_ITEM |
-            TodoListEntityFeature.UPDATE_TODO_ITEM |
-            TodoListEntityFeature.DELETE_TODO_ITEM |
-            # TodoListEntityFeature.MOVE_TODO_ITEM |
-            TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM |
-            TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
-    )
 
     def __init__(
             self,
@@ -81,6 +73,23 @@ class VikunjaTaskTodoListEntity(
         self._base_url = base_url
         self._coordinator = coordinator
         self._project_id = project_id
+
+    @property
+    def supported_features(self) -> TodoListEntityFeature:
+        features = (
+                TodoListEntityFeature.UPDATE_TODO_ITEM |
+                TodoListEntityFeature.DELETE_TODO_ITEM |
+                # TodoListEntityFeature.MOVE_TODO_ITEM |
+                TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM |
+                TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
+        )
+
+        # Saved filters are exposed as pseudo-projects with negative IDs.
+        # They aren't real projects, so tasks can't be created inside them.
+        if self._project_id >= 0:
+            features |= TodoListEntityFeature.CREATE_TODO_ITEM
+
+        return features
 
     @property
     def project(self) -> Project:
@@ -95,8 +104,11 @@ class VikunjaTaskTodoListEntity(
         return f"todo_list_{self.project.id}"
 
     def tasks_for_project(self) -> list[Task]:
-        """Return tasks that belong to this project."""
-        return [task for task in self._coordinator.data[DATA_TASKS_KEY].values() if task.project_id == self._project_id]
+        """Return tasks that belong to this project or match this saved filter."""
+        all_tasks = self._coordinator.data[DATA_TASKS_KEY]
+        task_ids = self._coordinator.data[DATA_PROJECT_TASKS_KEY].get(self._project_id, [])
+
+        return [all_tasks[task_id] for task_id in task_ids if task_id in all_tasks]
 
     def task_by_id(self, id: int) -> Optional[Task]:
         """Return a single task by its ID, or None if not found."""

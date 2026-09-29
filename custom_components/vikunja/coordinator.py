@@ -10,6 +10,7 @@ from custom_components.vikunja.const import (
     CONF_TASKS_AS_DEVICES,
     DATA_PROJECTS_KEY,
     DATA_TASKS_KEY,
+    DATA_PROJECT_TASKS_KEY,
     CONF_HIDE_DONE,
     CONF_SELECTED_PROJECTS,
     CONF_ALL_PROJECTS,
@@ -65,23 +66,28 @@ class VikunjaDataUpdateCoordinator(DataUpdateCoordinator):
                 current_projects = set(self.data[DATA_PROJECTS_KEY].keys()) if self.data else set()
                 current_tasks = set(self.data[DATA_TASKS_KEY].keys()) if self.data else set()
 
-                result = {DATA_PROJECTS_KEY: {}, DATA_TASKS_KEY: {}}
+                result = {DATA_PROJECTS_KEY: {}, DATA_TASKS_KEY: {}, DATA_PROJECT_TASKS_KEY: {}}
                 tasks = {}
+                project_tasks = {}
 
                 for project in projects:
                     result[DATA_PROJECTS_KEY][project.id] = project
                     LOGGER.info(f"Fetching tasks from Vikunja API for project {project.id}...")
-                    new_tasks = await self._vikunja_api.get_tasks(project.id)
+                    fetched_tasks = await self._vikunja_api.get_tasks(project.id)
 
-                    for task in new_tasks:
+                    task_ids_for_project = []
+                    for task in fetched_tasks:
                         if task.done and skip_done:
                             continue
 
-                        if task.id not in tasks.keys():
-                            tasks[task.id] = task
+                        task_ids_for_project.append(task.id)
+                        tasks[task.id] = task
+
+                    project_tasks[project.id] = task_ids_for_project
 
                 LOGGER.info(f"Fetched {len(tasks)} tasks from selected projects.")
                 result[DATA_TASKS_KEY] = tasks
+                result[DATA_PROJECT_TASKS_KEY] = project_tasks
 
                 # Calculate new and removed items
                 new_tasks = set(result[DATA_TASKS_KEY].keys()) - current_tasks

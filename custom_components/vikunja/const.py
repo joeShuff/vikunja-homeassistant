@@ -16,5 +16,6 @@ CONF_ALL_PROJECTS = "__all__"
 
 DATA_PROJECTS_KEY = "projects"
 DATA_TASKS_KEY = "tasks"
+DATA_PROJECT_TASKS_KEY = "project_tasks"
 
 LOGGER = logging.getLogger(__package__)
