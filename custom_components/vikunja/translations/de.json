@@ -76,6 +76,10 @@
         "priority": {
           "name": "Priorität",
           "description": "Priorität der Aufgabe."
+        },
+        "labels": {
+          "name": "Labels",
+          "description": "Vorhandene Vikunja-Labels (Titel oder ID), die der Aufgabe hinzugefügt werden."
         }
       }
     }

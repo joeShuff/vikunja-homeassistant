@@ -28,3 +28,8 @@ create_task:
             - high
             - urgent
             - do_it_now
+    labels:
+      example: "Household"
+      selector:
+        text:
+          multiple: true

@@ -76,6 +76,10 @@
         "priority": {
           "name": "Priority",
           "description": "Priority of the task."
+        },
+        "labels": {
+          "name": "Labels",
+          "description": "Existing Vikunja labels (title or ID) to add to the task."
         }
       }
     }

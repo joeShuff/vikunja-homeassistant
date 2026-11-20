@@ -20,18 +20,21 @@ from custom_components.vikunja import VikunjaDataUpdateCoordinator, DOMAIN, LOGG
 from custom_components.vikunja.const import (
     ATTR_DESCRIPTION,
     ATTR_DUE_DATETIME,
+    ATTR_LABELS,
     ATTR_PRIORITY,
     ATTR_TITLE,
     DATA_PROJECTS_KEY,
     DATA_TASKS_KEY,
     SERVICE_CREATE_TASK,
 )
+from custom_components.vikunja.labels import async_resolve_labels
 
 CREATE_TASK_SCHEMA = {
     vol.Required(ATTR_TITLE): vol.All(cv.string, vol.Length(min=1, max=250)),
     vol.Optional(ATTR_DESCRIPTION): cv.string,
     vol.Optional(ATTR_DUE_DATETIME): cv.datetime,
     vol.Optional(ATTR_PRIORITY): vol.In([priority.name.lower() for priority in Priority]),
+    vol.Optional(ATTR_LABELS): vol.All(cv.ensure_list, [cv.string]),
 }
 
 
@@ -204,6 +207,7 @@ class VikunjaTaskTodoListEntity(
             "title": task.title,
             "project_id": self._project_id,
             "url": f"{self._base_url}/tasks/{task.id}",
+            "labels": [label.title for label in task.labels],
         }
 
     async def async_service_create_task(
@@ -212,6 +216,7 @@ class VikunjaTaskTodoListEntity(
             description: str | None = None,
             due_datetime: datetime | None = None,
             priority: str | None = None,
+            labels: list[str] | None = None,
     ) -> ServiceResponse:
         """Create a task with Vikunja specific fields."""
         data = {"title": title, "done": False}
@@ -223,10 +228,24 @@ class VikunjaTaskTodoListEntity(
             data["priority"] = Priority[priority.upper()].value
 
         try:
+            # Resolve labels first, so a typo does not leave a half-configured task behind
+            task_labels = await async_resolve_labels(self.project.api, labels or [])
+
             task = await self.project.create_task(data)
         except APIError as err:
             raise HomeAssistantError(f"Failed to create Vikunja task '{title}': {err}") from err
 
         LOGGER.info(f"Created Vikunja task {task.id} '{task.title}' in project {self._project_id}")
-        await self._coordinator.async_request_refresh()
+
+        try:
+            # Vikunja ignores labels on create, they are attached afterwards
+            if task_labels:
+                await task.set_labels([label.id for label in task_labels])
+        except APIError as err:
+            raise HomeAssistantError(
+                f"Created Vikunja task {task.id} '{title}', but failed to add its labels: {err}"
+            ) from err
+        finally:
+            await self._coordinator.async_request_refresh()
+
         return self._task_response(task)

@@ -76,6 +76,10 @@
         "priority": {
           "name": "Prioridad",
           "description": "Prioridad de la tarea."
+        },
+        "labels": {
+          "name": "Etiquetas",
+          "description": "Etiquetas de Vikunja existentes (título o ID) que se añaden a la tarea."
         }
       }
     }

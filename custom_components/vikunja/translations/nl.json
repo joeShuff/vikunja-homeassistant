@@ -76,6 +76,10 @@
         "priority": {
           "name": "Prioriteit",
           "description": "Prioriteit van de taak."
+        },
+        "labels": {
+          "name": "Labels",
+          "description": "Bestaande Vikunja-labels (titel of ID) om aan de taak toe te voegen."
         }
       }
     }
