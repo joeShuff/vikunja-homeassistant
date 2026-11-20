@@ -55,5 +55,40 @@
     "error": {
       "no_projects_selected": "Selecteer alstublieft ten minste één project om te synchroniseren."
     }
+  },
+  "services": {
+    "create_task": {
+      "name": "Taak aanmaken",
+      "description": "Maakt een taak aan in het Vikunja-project van de geselecteerde takenlijst.",
+      "fields": {
+        "title": {
+          "name": "Titel",
+          "description": "Titel van de nieuwe taak."
+        },
+        "description": {
+          "name": "Beschrijving",
+          "description": "Beschrijving van de taak."
+        },
+        "due_datetime": {
+          "name": "Vervaldatum en -tijd",
+          "description": "Wanneer de taak vervalt."
+        },
+        "priority": {
+          "name": "Prioriteit",
+          "description": "Prioriteit van de taak."
+        }
+      }
+    }
+  },
+  "selector": {
+    "priority": {
+      "options": {
+        "low": "Laag",
+        "medium": "Gemiddeld",
+        "high": "Hoog",
+        "urgent": "Urgent",
+        "do_it_now": "Nu doen"
+      }
+    }
   }
 }

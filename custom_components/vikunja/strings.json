@@ -55,5 +55,40 @@
     "error": {
       "no_projects_selected": "Please select at least one project to sync."
     }
+  },
+  "services": {
+    "create_task": {
+      "name": "Create task",
+      "description": "Creates a task in the Vikunja project of the selected to-do list.",
+      "fields": {
+        "title": {
+          "name": "Title",
+          "description": "Title of the new task."
+        },
+        "description": {
+          "name": "Description",
+          "description": "Description of the task."
+        },
+        "due_datetime": {
+          "name": "Due date and time",
+          "description": "When the task is due."
+        },
+        "priority": {
+          "name": "Priority",
+          "description": "Priority of the task."
+        }
+      }
+    }
+  },
+  "selector": {
+    "priority": {
+      "options": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "urgent": "Urgent",
+        "do_it_now": "Do it now"
+      }
+    }
   }
 }

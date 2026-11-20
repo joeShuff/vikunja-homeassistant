@@ -55,5 +55,40 @@
     "error": {
       "no_projects_selected": "Bitte wählen Sie mindestens ein Projekt zum Synchronisieren aus."
     }
+  },
+  "services": {
+    "create_task": {
+      "name": "Aufgabe erstellen",
+      "description": "Erstellt eine Aufgabe im Vikunja-Projekt der ausgewählten To-do-Liste.",
+      "fields": {
+        "title": {
+          "name": "Titel",
+          "description": "Titel der neuen Aufgabe."
+        },
+        "description": {
+          "name": "Beschreibung",
+          "description": "Beschreibung der Aufgabe."
+        },
+        "due_datetime": {
+          "name": "Fälligkeitsdatum und -uhrzeit",
+          "description": "Wann die Aufgabe fällig ist."
+        },
+        "priority": {
+          "name": "Priorität",
+          "description": "Priorität der Aufgabe."
+        }
+      }
+    }
+  },
+  "selector": {
+    "priority": {
+      "options": {
+        "low": "Niedrig",
+        "medium": "Mittel",
+        "high": "Hoch",
+        "urgent": "Dringend",
+        "do_it_now": "Sofort erledigen"
+      }
+    }
   }
 }

@@ -55,5 +55,40 @@
     "error": {
       "no_projects_selected": "Por favor selecciona al menos un proyecto para sincronizar."
     }
+  },
+  "services": {
+    "create_task": {
+      "name": "Crear tarea",
+      "description": "Crea una tarea en el proyecto de Vikunja de la lista de tareas seleccionada.",
+      "fields": {
+        "title": {
+          "name": "Título",
+          "description": "Título de la nueva tarea."
+        },
+        "description": {
+          "name": "Descripción",
+          "description": "Descripción de la tarea."
+        },
+        "due_datetime": {
+          "name": "Fecha y hora de vencimiento",
+          "description": "Cuándo vence la tarea."
+        },
+        "priority": {
+          "name": "Prioridad",
+          "description": "Prioridad de la tarea."
+        }
+      }
+    }
+  },
+  "selector": {
+    "priority": {
+      "options": {
+        "low": "Baja",
+        "medium": "Media",
+        "high": "Alta",
+        "urgent": "Urgente",
+        "do_it_now": "Hacer ahora"
+      }
+    }
   }
 }

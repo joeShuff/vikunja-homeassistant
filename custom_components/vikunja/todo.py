@@ -1,18 +1,45 @@
 from datetime import datetime, date, timezone
 from typing import cast, Optional
 
+import homeassistant.helpers.config_validation as cv
 import homeassistant.util.dt as dt
+import voluptuous as vol
 from homeassistant.components.todo import TodoItem, TodoItemStatus, TodoListEntity, TodoListEntityFeature
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, ServiceResponse, SupportsResponse
+from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from pyvikunja.api import VikunjaAPI
+from pyvikunja.api import APIError, VikunjaAPI
+from pyvikunja.models.enum.task_priority import Priority
 from pyvikunja.models.project import Project
 from pyvikunja.models.task import Task
 
 from custom_components.vikunja import VikunjaDataUpdateCoordinator, DOMAIN, LOGGER
-from custom_components.vikunja.const import DATA_PROJECTS_KEY, DATA_TASKS_KEY
+from custom_components.vikunja.const import (
+    ATTR_DESCRIPTION,
+    ATTR_DUE_DATETIME,
+    ATTR_PRIORITY,
+    ATTR_TITLE,
+    DATA_PROJECTS_KEY,
+    DATA_TASKS_KEY,
+    SERVICE_CREATE_TASK,
+)
+
+CREATE_TASK_SCHEMA = {
+    vol.Required(ATTR_TITLE): vol.All(cv.string, vol.Length(min=1, max=250)),
+    vol.Optional(ATTR_DESCRIPTION): cv.string,
+    vol.Optional(ATTR_DUE_DATETIME): cv.datetime,
+    vol.Optional(ATTR_PRIORITY): vol.In([priority.name.lower() for priority in Priority]),
+}
+
+
+def _to_vikunja_datetime(value: datetime) -> str:
+    """Convert a datetime to the ISO format Vikunja expects, assuming local time if naive."""
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=dt.DEFAULT_TIME_ZONE)
+    return value.isoformat()
 
 
 async def async_setup_entry(
@@ -26,6 +53,14 @@ async def async_setup_entry(
 
     vikunja_api: VikunjaAPI = vikunja_data["api"]
     coordinator = vikunja_data["coordinator"]
+
+    platform = entity_platform.async_get_current_platform()
+    platform.async_register_entity_service(
+        SERVICE_CREATE_TASK,
+        CREATE_TASK_SCHEMA,
+        "async_service_create_task",
+        supports_response=SupportsResponse.OPTIONAL,
+    )
 
     ## Filter projects to all that aren't ID -1 (that's favourites)
     projects: list[Project] = [proj for proj in coordinator.data[DATA_PROJECTS_KEY].values() if proj.id != -1]
@@ -159,3 +194,39 @@ class VikunjaTaskTodoListEntity(
 
         self._coordinator.async_update_listeners()
         await self._coordinator.async_request_refresh()
+
+    # Vikunja specific actions
+
+    def _task_response(self, task: Task) -> dict:
+        """Describe a task in an action response."""
+        return {
+            "task_id": task.id,
+            "title": task.title,
+            "project_id": self._project_id,
+            "url": f"{self._base_url}/tasks/{task.id}",
+        }
+
+    async def async_service_create_task(
+            self,
+            title: str,
+            description: str | None = None,
+            due_datetime: datetime | None = None,
+            priority: str | None = None,
+    ) -> ServiceResponse:
+        """Create a task with Vikunja specific fields."""
+        data = {"title": title, "done": False}
+        if description:
+            data["description"] = description
+        if due_datetime is not None:
+            data["due_date"] = _to_vikunja_datetime(due_datetime)
+        if priority is not None:
+            data["priority"] = Priority[priority.upper()].value
+
+        try:
+            task = await self.project.create_task(data)
+        except APIError as err:
+            raise HomeAssistantError(f"Failed to create Vikunja task '{title}': {err}") from err
+
+        LOGGER.info(f"Created Vikunja task {task.id} '{task.title}' in project {self._project_id}")
+        await self._coordinator.async_request_refresh()
+        return self._task_response(task)

@@ -14,6 +14,14 @@ CONF_TASKS_AS_DEVICES = "tasks_as_devices"
 # Special value to indicate all projects should be synced
 CONF_ALL_PROJECTS = "__all__"
 
+# Actions
+SERVICE_CREATE_TASK = "create_task"
+
+ATTR_TITLE = "title"
+ATTR_DESCRIPTION = "description"
+ATTR_DUE_DATETIME = "due_datetime"
+ATTR_PRIORITY = "priority"
+
 DATA_PROJECTS_KEY = "projects"
 DATA_TASKS_KEY = "tasks"
 
