@@ -1,8 +1,13 @@
-from datetime import datetime, date, timezone
-from typing import cast, Optional
+from datetime import date, datetime, time
+from typing import Optional
 
 import homeassistant.util.dt as dt
-from homeassistant.components.todo import TodoItem, TodoItemStatus, TodoListEntity, TodoListEntityFeature
+from homeassistant.components.todo import (
+    TodoItem,
+    TodoItemStatus,
+    TodoListEntity,
+    TodoListEntityFeature,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -16,7 +21,7 @@ from custom_components.vikunja.const import DATA_PROJECTS_KEY, DATA_TASKS_KEY
 
 
 async def async_setup_entry(
-        hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     # Get stored API instance and fetched data
     vikunja_data = hass.data.get(DOMAIN, {}).get(entry.entry_id)
@@ -27,8 +32,12 @@ async def async_setup_entry(
     vikunja_api: VikunjaAPI = vikunja_data["api"]
     coordinator = vikunja_data["coordinator"]
 
-    ## Filter projects to all that aren't ID -1 (that's favourites)
-    projects: list[Project] = [proj for proj in coordinator.data[DATA_PROJECTS_KEY].values() if proj.id != -1]
+    # Filter projects to all that aren't ID -1 (that's favourites)
+    projects: list[Project] = [
+        proj
+        for proj in coordinator.data[DATA_PROJECTS_KEY].values()
+        if proj.id != -1
+    ]
 
     async_add_entities(
         (
@@ -41,6 +50,15 @@ async def async_setup_entry(
         ),
         True,
     )
+
+
+def _due_datetime(due: date | datetime) -> datetime:
+    """Convert a Home Assistant due value to a timezone-aware datetime."""
+    if isinstance(due, datetime):
+        return due.replace(tzinfo=dt.DEFAULT_TIME_ZONE)
+
+    # Date-only values represent midnight in Home Assistant's local timezone.
+    return datetime.combine(due, time.min, tzinfo=dt.DEFAULT_TIME_ZONE)
 
 
 def _convert_api_item(item: Task) -> TodoItem:
@@ -56,26 +74,24 @@ def _convert_api_item(item: Task) -> TodoItem:
     )
 
 
-class VikunjaTaskTodoListEntity(
-    CoordinatorEntity, TodoListEntity
-):
+class VikunjaTaskTodoListEntity(CoordinatorEntity, TodoListEntity):
     """A To-do List representation of the Shopping List."""
 
     _attr_has_entity_name = True
     _attr_supported_features = (
-            TodoListEntityFeature.CREATE_TODO_ITEM |
-            TodoListEntityFeature.UPDATE_TODO_ITEM |
-            TodoListEntityFeature.DELETE_TODO_ITEM |
-            # TodoListEntityFeature.MOVE_TODO_ITEM |
-            TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM |
-            TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
+        TodoListEntityFeature.CREATE_TODO_ITEM
+        | TodoListEntityFeature.UPDATE_TODO_ITEM
+        | TodoListEntityFeature.DELETE_TODO_ITEM
+        # TodoListEntityFeature.MOVE_TODO_ITEM is not currently supported.
+        | TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM
+        | TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
     )
 
     def __init__(
-            self,
-            coordinator: VikunjaDataUpdateCoordinator,
-            base_url: str,
-            project_id,
+        self,
+        coordinator: VikunjaDataUpdateCoordinator,
+        base_url: str,
+        project_id: int,
     ) -> None:
         super().__init__(coordinator)
         self._base_url = base_url
@@ -96,7 +112,11 @@ class VikunjaTaskTodoListEntity(
 
     def tasks_for_project(self) -> list[Task]:
         """Return tasks that belong to this project."""
-        return [task for task in self._coordinator.data[DATA_TASKS_KEY].values() if task.project_id == self._project_id]
+        return [
+            task
+            for task in self._coordinator.data[DATA_TASKS_KEY].values()
+            if task.project_id == self._project_id
+        ]
 
     def task_by_id(self, id: int) -> Optional[Task]:
         """Return a single task by its ID, or None if not found."""
@@ -116,26 +136,32 @@ class VikunjaTaskTodoListEntity(
         data = {
             "done": item.status == TodoItemStatus.COMPLETED,
             "title": item.summary,
-            "due_date": None,
-            "description": item.description
+            "description": item.description,
         }
 
         if item.due is not None and item.status != TodoItemStatus.COMPLETED:
-            data["due_date"] = str(item.due.replace(tzinfo=dt.DEFAULT_TIME_ZONE).isoformat())
+            data["due_date"] = _due_datetime(item.due).isoformat()
 
-        await self.project.create_task(data)
-        self._coordinator.async_update_listeners()
-        await self._coordinator.async_request_refresh()
+        # Use the task returned by Vikunja to update the local cache immediately.
+        new_task = await self.project.create_task(data)
+        if new_task is not None and self._coordinator.data is not None:
+            self._coordinator.data[DATA_TASKS_KEY][new_task.id] = new_task
+
+        self.async_write_ha_state()
 
     async def async_delete_todo_items(self, uids: list[str]) -> None:
         for uid in uids:
             id = int(uid)
 
             task = self.task_by_id(id)
+            if task is None:
+                continue
 
             await task.delete_task()
-            self._coordinator.async_update_listeners()
-            await self._coordinator.async_request_refresh()
+            # Remove the task from the local cache instead of waiting for a refresh.
+            self._coordinator.data[DATA_TASKS_KEY].pop(id, None)
+
+        self.async_write_ha_state()
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """Update a To-do item."""
@@ -148,14 +174,23 @@ class VikunjaTaskTodoListEntity(
             "done": item.status == TodoItemStatus.COMPLETED,
             "title": item.summary,
             "due_date": None,
-            "description": item.description
+            "description": item.description,
         }
 
         if item.due is not None and item.status != TodoItemStatus.COMPLETED:
-            new_data["due_date"] = str(item.due.replace(tzinfo=dt.DEFAULT_TIME_ZONE).isoformat())
+            new_data["due_date"] = _due_datetime(item.due).isoformat()
 
         if task is not None:
             await task.update(new_data)
 
-        self._coordinator.async_update_listeners()
-        await self._coordinator.async_request_refresh()
+            # Keep the cached task in sync so the UI reflects the change immediately.
+            task.done = new_data["done"]
+            task.title = new_data["title"]
+            task.due_date = (
+                _due_datetime(item.due)
+                if item.due is not None and item.status != TodoItemStatus.COMPLETED
+                else None
+            )
+            task.description = new_data["description"]
+
+        self.async_write_ha_state()
