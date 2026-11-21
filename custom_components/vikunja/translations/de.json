@@ -136,6 +136,16 @@
           "description": "Vikunja-Benutzer (Benutzername, Anzeigename oder Benutzer-ID), deren Zuweisung entfernt wird."
         }
       }
+    },
+    "remove_task": {
+      "name": "Aufgabe entfernen",
+      "description": "Löscht eine bestehende Aufgabe aus dem Vikunja-Projekt der ausgewählten To-do-Liste.",
+      "fields": {
+        "item": {
+          "name": "Aufgabe",
+          "description": "Titel oder ID der Aufgabe in der ausgewählten To-do-Liste."
+        }
+      }
     }
   },
   "selector": {

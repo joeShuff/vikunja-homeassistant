@@ -136,6 +136,16 @@
           "description": "Vikunja-gebruikers (gebruikersnaam, weergavenaam of gebruikers-ID) van wie de toewijzing wordt verwijderd."
         }
       }
+    },
+    "remove_task": {
+      "name": "Taak verwijderen",
+      "description": "Verwijdert een bestaande taak uit het Vikunja-project van de geselecteerde takenlijst.",
+      "fields": {
+        "item": {
+          "name": "Taak",
+          "description": "Titel of ID van de taak in de geselecteerde takenlijst."
+        }
+      }
     }
   },
   "selector": {

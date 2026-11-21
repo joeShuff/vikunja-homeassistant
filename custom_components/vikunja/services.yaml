@@ -103,3 +103,15 @@ update_task:
       selector:
         text:
           multiple: true
+
+remove_task:
+  target:
+    entity:
+      integration: vikunja
+      domain: todo
+  fields:
+    item:
+      required: true
+      example: "Take out the bins"
+      selector:
+        text:

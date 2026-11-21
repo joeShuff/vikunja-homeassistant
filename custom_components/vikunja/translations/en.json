@@ -136,6 +136,16 @@
           "description": "Vikunja users (username, display name or user ID) to unassign."
         }
       }
+    },
+    "remove_task": {
+      "name": "Remove task",
+      "description": "Deletes an existing task from the Vikunja project of the selected to-do list.",
+      "fields": {
+        "item": {
+          "name": "Task",
+          "description": "Title or ID of the task in the selected to-do list."
+        }
+      }
     }
   },
   "selector": {

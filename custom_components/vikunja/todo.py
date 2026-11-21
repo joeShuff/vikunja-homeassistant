@@ -35,6 +35,7 @@ from custom_components.vikunja.const import (
     DATA_PROJECTS_KEY,
     DATA_TASKS_KEY,
     SERVICE_CREATE_TASK,
+    SERVICE_REMOVE_TASK,
     SERVICE_UPDATE_TASK,
 )
 from custom_components.vikunja.labels import async_resolve_labels
@@ -97,6 +98,11 @@ UPDATE_TASK_SCHEMA = vol.All(
     cv.has_at_least_one_key(*UPDATE_TASK_CHANGES),
     _replace_or_add_remove,
 )
+
+
+REMOVE_TASK_SCHEMA = {
+    vol.Required(ATTR_ITEM): cv.string,
+}
 
 
 def _check_add_remove_overlap(add: list, remove: list, kind: str, name: Callable[[Any], str]) -> None:
@@ -163,6 +169,12 @@ async def async_setup_entry(
         SERVICE_UPDATE_TASK,
         UPDATE_TASK_SCHEMA,
         "async_service_update_task",
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+    platform.async_register_entity_service(
+        SERVICE_REMOVE_TASK,
+        REMOVE_TASK_SCHEMA,
+        "async_service_remove_task",
         supports_response=SupportsResponse.OPTIONAL,
     )
 
@@ -471,3 +483,17 @@ class VikunjaTaskTodoListEntity(
             await self._coordinator.async_request_refresh()
 
         return self._task_response(task)
+
+    async def async_service_remove_task(self, item: str) -> ServiceResponse:
+        """Delete an existing task."""
+        task = self._find_task(item)
+
+        try:
+            await task.delete_task()
+        except APIError as err:
+            raise HomeAssistantError(f"Failed to remove Vikunja task {task.id}: {err}") from err
+        finally:
+            await self._coordinator.async_request_refresh()
+
+        LOGGER.info(f"Removed Vikunja task {task.id} '{task.title}' from project {self._project_id}")
+        return {"task_id": task.id, "title": task.title, "project_id": self._project_id}

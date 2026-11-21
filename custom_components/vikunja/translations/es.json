@@ -136,6 +136,16 @@
           "description": "Usuarios de Vikunja (nombre de usuario, nombre visible o ID) cuya asignación se quita."
         }
       }
+    },
+    "remove_task": {
+      "name": "Eliminar tarea",
+      "description": "Elimina una tarea existente del proyecto de Vikunja de la lista de tareas seleccionada.",
+      "fields": {
+        "item": {
+          "name": "Tarea",
+          "description": "Título o ID de la tarea en la lista de tareas seleccionada."
+        }
+      }
     }
   },
   "selector": {

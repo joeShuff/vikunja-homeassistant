@@ -17,6 +17,7 @@ CONF_ALL_PROJECTS = "__all__"
 # Actions
 SERVICE_CREATE_TASK = "create_task"
 SERVICE_UPDATE_TASK = "update_task"
+SERVICE_REMOVE_TASK = "remove_task"
 
 ATTR_TITLE = "title"
 ATTR_DESCRIPTION = "description"
