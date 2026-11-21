@@ -38,3 +38,38 @@ create_task:
       selector:
         text:
           multiple: true
+
+update_task:
+  target:
+    entity:
+      integration: vikunja
+      domain: todo
+  fields:
+    item:
+      required: true
+      example: "Take out the bins"
+      selector:
+        text:
+    rename:
+      example: "Take out the blue bin"
+      selector:
+        text:
+    description:
+      example: "Blue bin this week"
+      selector:
+        text:
+          multiline: true
+    due_datetime:
+      example: "2026-11-22 19:00:00"
+      selector:
+        datetime:
+    priority:
+      selector:
+        select:
+          translation_key: priority
+          options:
+            - low
+            - medium
+            - high
+            - urgent
+            - do_it_now

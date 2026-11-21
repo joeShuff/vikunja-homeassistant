@@ -86,6 +86,32 @@
           "description": "Vikunja-gebruikers (gebruikersnaam, weergavenaam of gebruikers-ID) om toe te wijzen. Ze hebben toegang tot het project nodig."
         }
       }
+    },
+    "update_task": {
+      "name": "Taak bijwerken",
+      "description": "Werkt een bestaande taak bij in het Vikunja-project van de geselecteerde takenlijst. Velden die niet zijn opgegeven, blijven ongewijzigd.",
+      "fields": {
+        "item": {
+          "name": "Taak",
+          "description": "Titel of ID van de taak in de geselecteerde takenlijst."
+        },
+        "rename": {
+          "name": "Hernoemen",
+          "description": "Nieuwe titel van de taak."
+        },
+        "description": {
+          "name": "Beschrijving",
+          "description": "Nieuwe beschrijving van de taak."
+        },
+        "due_datetime": {
+          "name": "Vervaldatum en -tijd",
+          "description": "Nieuwe vervaldatum en -tijd van de taak."
+        },
+        "priority": {
+          "name": "Prioriteit",
+          "description": "Nieuwe prioriteit van de taak."
+        }
+      }
     }
   },
   "selector": {

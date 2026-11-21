@@ -16,6 +16,7 @@ CONF_ALL_PROJECTS = "__all__"
 
 # Actions
 SERVICE_CREATE_TASK = "create_task"
+SERVICE_UPDATE_TASK = "update_task"
 
 ATTR_TITLE = "title"
 ATTR_DESCRIPTION = "description"
@@ -23,6 +24,8 @@ ATTR_DUE_DATETIME = "due_datetime"
 ATTR_PRIORITY = "priority"
 ATTR_LABELS = "labels"
 ATTR_ASSIGNEES = "assignees"
+ATTR_ITEM = "item"
+ATTR_RENAME = "rename"
 
 DATA_PROJECTS_KEY = "projects"
 DATA_TASKS_KEY = "tasks"

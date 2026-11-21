@@ -7,7 +7,7 @@ import voluptuous as vol
 from homeassistant.components.todo import TodoItem, TodoItemStatus, TodoListEntity, TodoListEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceResponse, SupportsResponse
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -22,23 +22,43 @@ from custom_components.vikunja.const import (
     ATTR_ASSIGNEES,
     ATTR_DESCRIPTION,
     ATTR_DUE_DATETIME,
+    ATTR_ITEM,
     ATTR_LABELS,
     ATTR_PRIORITY,
+    ATTR_RENAME,
     ATTR_TITLE,
     DATA_PROJECTS_KEY,
     DATA_TASKS_KEY,
     SERVICE_CREATE_TASK,
+    SERVICE_UPDATE_TASK,
 )
 from custom_components.vikunja.labels import async_resolve_labels
 
+_TITLE = vol.All(cv.string, vol.Length(min=1, max=250))
+_PRIORITY = vol.In([priority.name.lower() for priority in Priority])
+
 CREATE_TASK_SCHEMA = {
-    vol.Required(ATTR_TITLE): vol.All(cv.string, vol.Length(min=1, max=250)),
+    vol.Required(ATTR_TITLE): _TITLE,
     vol.Optional(ATTR_DESCRIPTION): cv.string,
     vol.Optional(ATTR_DUE_DATETIME): cv.datetime,
-    vol.Optional(ATTR_PRIORITY): vol.In([priority.name.lower() for priority in Priority]),
+    vol.Optional(ATTR_PRIORITY): _PRIORITY,
     vol.Optional(ATTR_LABELS): vol.All(cv.ensure_list, [cv.string]),
     vol.Optional(ATTR_ASSIGNEES): vol.All(cv.ensure_list, [cv.string]),
 }
+
+# Fields of update_task that change the task; at least one of them is required
+UPDATE_TASK_CHANGES = (ATTR_RENAME, ATTR_DESCRIPTION, ATTR_DUE_DATETIME, ATTR_PRIORITY)
+
+UPDATE_TASK_SCHEMA = vol.All(
+    cv.make_entity_service_schema({
+        vol.Required(ATTR_ITEM): cv.string,
+        vol.Optional(ATTR_RENAME): _TITLE,
+        vol.Optional(ATTR_DESCRIPTION): cv.string,
+        vol.Optional(ATTR_DUE_DATETIME): cv.datetime,
+        vol.Optional(ATTR_PRIORITY): _PRIORITY,
+    }),
+    cv.has_at_least_one_key(*UPDATE_TASK_CHANGES),
+)
 
 
 def _to_vikunja_datetime(value: datetime) -> str:
@@ -65,6 +85,12 @@ async def async_setup_entry(
         SERVICE_CREATE_TASK,
         CREATE_TASK_SCHEMA,
         "async_service_create_task",
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+    platform.async_register_entity_service(
+        SERVICE_UPDATE_TASK,
+        UPDATE_TASK_SCHEMA,
+        "async_service_update_task",
         supports_response=SupportsResponse.OPTIONAL,
     )
 
@@ -214,6 +240,26 @@ class VikunjaTaskTodoListEntity(
             "assignees": [user_identifier(user) for user in task.assignees],
         }
 
+    def _find_task(self, item: str) -> Task:
+        """Find a task of this to-do list by its ID or its title (case-insensitive)."""
+        item = item.strip()
+        tasks = self.tasks_for_project()
+
+        if item.isdigit():
+            task = next((t for t in tasks if t.id == int(item)), None)
+            if task is not None:
+                return task
+
+        matches = [t for t in tasks if t.title.casefold() == item.casefold()]
+        if not matches:
+            raise ServiceValidationError(f"No task '{item}' found in the Vikunja project '{self.project.title}'.")
+        if len(matches) > 1:
+            raise ServiceValidationError(
+                f"Several tasks are named '{item}' in the Vikunja project '{self.project.title}' "
+                f"(IDs: {', '.join(str(t.id) for t in matches)}). Use the task ID instead."
+            )
+        return matches[0]
+
     async def async_service_create_task(
             self,
             title: str,
@@ -255,6 +301,39 @@ class VikunjaTaskTodoListEntity(
             raise HomeAssistantError(
                 f"Created Vikunja task {task.id} '{title}', but failed to add its labels: {err}"
             ) from err
+        finally:
+            await self._coordinator.async_request_refresh()
+
+        return self._task_response(task)
+
+    async def async_service_update_task(
+            self,
+            item: str,
+            rename: str | None = None,
+            description: str | None = None,
+            due_datetime: datetime | None = None,
+            priority: str | None = None,
+    ) -> ServiceResponse:
+        """Update an existing task. Fields that are not given stay unchanged."""
+        task = self._find_task(item)
+
+        data = {}
+        if rename is not None:
+            data["title"] = rename
+        if description is not None:
+            data["description"] = description
+        if due_datetime is not None:
+            data["due_date"] = _to_vikunja_datetime(due_datetime)
+        if priority is not None:
+            data["priority"] = Priority[priority.upper()].value
+
+        try:
+            # Task.update sends the whole task, so start from fresh data to not
+            # overwrite changes made in Vikunja since the last poll
+            task = await self.project.api.get_task(task.id)
+            await task.update(data)
+        except APIError as err:
+            raise HomeAssistantError(f"Failed to update Vikunja task {task.id}: {err}") from err
         finally:
             await self._coordinator.async_request_refresh()
 

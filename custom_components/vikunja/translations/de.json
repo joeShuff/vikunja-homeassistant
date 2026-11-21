@@ -86,6 +86,32 @@
           "description": "Vikunja-Benutzer (Benutzername, Anzeigename oder Benutzer-ID), die zugewiesen werden. Sie brauchen Zugriff auf das Projekt."
         }
       }
+    },
+    "update_task": {
+      "name": "Aufgabe aktualisieren",
+      "description": "Aktualisiert eine bestehende Aufgabe im Vikunja-Projekt der ausgewählten To-do-Liste. Nicht angegebene Felder bleiben unverändert.",
+      "fields": {
+        "item": {
+          "name": "Aufgabe",
+          "description": "Titel oder ID der Aufgabe in der ausgewählten To-do-Liste."
+        },
+        "rename": {
+          "name": "Umbenennen",
+          "description": "Neuer Titel der Aufgabe."
+        },
+        "description": {
+          "name": "Beschreibung",
+          "description": "Neue Beschreibung der Aufgabe."
+        },
+        "due_datetime": {
+          "name": "Fälligkeitsdatum und -uhrzeit",
+          "description": "Neues Fälligkeitsdatum und neue Uhrzeit der Aufgabe."
+        },
+        "priority": {
+          "name": "Priorität",
+          "description": "Neue Priorität der Aufgabe."
+        }
+      }
     }
   },
   "selector": {

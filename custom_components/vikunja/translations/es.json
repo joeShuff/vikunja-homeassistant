@@ -86,6 +86,32 @@
           "description": "Usuarios de Vikunja (nombre de usuario, nombre visible o ID) que se asignan. Necesitan acceso al proyecto."
         }
       }
+    },
+    "update_task": {
+      "name": "Actualizar tarea",
+      "description": "Actualiza una tarea existente en el proyecto de Vikunja de la lista de tareas seleccionada. Los campos no indicados no cambian.",
+      "fields": {
+        "item": {
+          "name": "Tarea",
+          "description": "Título o ID de la tarea en la lista de tareas seleccionada."
+        },
+        "rename": {
+          "name": "Renombrar",
+          "description": "Nuevo título de la tarea."
+        },
+        "description": {
+          "name": "Descripción",
+          "description": "Nueva descripción de la tarea."
+        },
+        "due_datetime": {
+          "name": "Fecha y hora de vencimiento",
+          "description": "Nueva fecha y hora de vencimiento de la tarea."
+        },
+        "priority": {
+          "name": "Prioridad",
+          "description": "Nueva prioridad de la tarea."
+        }
+      }
     }
   },
   "selector": {
