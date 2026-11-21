@@ -9,6 +9,7 @@ This Home Assistant integration allows you to sync tasks from your [Vikunja](htt
 - Fetch tasks from Vikunja and display them as entities in Home Assistant
 - Supports viewing and completing tasks. (more to come)
 - Easy integration with Home Assistant UI for task management
+- Actions to create, update and remove tasks, including labels, assignees and priority
 
 ## Installation
 
@@ -67,6 +68,11 @@ Once the integration is installed, you need to provide your Vikunja instance's U
      - Read All (required)
      - Read One (required)
      - Update (required)
+   - Optional, for labels and assignees in the [actions](#actions):
+     - Projects: Project Users (`projectusers`) for assignees
+     - Labels: Read All
+     - Task Labels (`tasks_labels`): Read All, Create, Delete, Update Bulk
+     - Task Assignees (`tasks_assignees`): Read All, Create, Delete, Update Bulk
 5. Copy the generated API key.
 
 ### Setup
@@ -99,6 +105,68 @@ You will also find that each "Project" in Vikunja has created a Todo List in HA.
 
 And you can Create/Update/Complete tasks from the Todo section
 ![todo_item.png](art/todo_item.png)
+
+### Actions
+
+Besides the standard `todo.*` actions, the integration provides actions for Vikunja features that Home Assistant's to-do lists don't support. They target a Vikunja to-do list, which selects the Vikunja project.
+
+**`vikunja.create_task`** creates a task:
+
+```yaml
+action: vikunja.create_task
+target:
+  entity_id: todo.household
+data:
+  title: "Take out the bins"
+  description: "Blue bin this week"    # optional
+  due_datetime: "2026-11-21 19:00:00"  # optional, local time unless a time zone is given
+  priority: high                       # optional: low, medium, high, urgent, do_it_now
+  labels:                              # optional
+    - Household
+  assignees:                           # optional
+    - anna
+response_variable: task                # optional
+```
+
+**`vikunja.update_task`** changes an existing task. Fields that are not given stay unchanged; at least one change is required.
+
+```yaml
+action: vikunja.update_task
+target:
+  entity_id: todo.household
+data:
+  item: "Take out the bins"            # title or task ID
+  rename: "Take out the blue bin"      # optional
+  description: ""                      # optional, an empty text clears the description
+  due_datetime: "2026-11-22 19:00:00"  # optional
+  priority: urgent                     # optional
+  add_labels: [Urgent]                 # optional
+  remove_labels: [Household]           # optional
+  add_assignees: [bob]                 # optional
+  remove_assignees: [anna]             # optional
+```
+
+Instead of adding and removing, `labels` and `assignees` replace all labels or assignees of the task; an empty list removes them all. Replacing cannot be combined with `add_…` or `remove_…` for the same list.
+
+**`vikunja.remove_task`** deletes a task:
+
+```yaml
+action: vikunja.remove_task
+target:
+  entity_id: todo.household
+data:
+  item: "Take out the bins"            # title or task ID
+```
+
+All three actions can return a response with `task_id`, `title` and `project_id`. `create_task` and `update_task` also return `url`, `labels` and `assignees`.
+
+How values are matched:
+
+- **Tasks** (`item`): by task ID, or by title (case-insensitive) within the selected to-do list. If several tasks have the same title, use the task ID. With *Hide Completed Tasks* enabled, completed tasks cannot be found.
+- **Labels**: by label ID or title (case-insensitive). Labels must already exist in Vikunja; unknown labels are reported as an error instead of being created.
+- **Assignees**: by user ID, username or display name (case-insensitive). Only users with access to the project can be assigned.
+
+Names are checked before anything is changed, so a typo leaves the task untouched. In the action editor, labels and assignees are dropdowns of the existing labels and the users of the synced projects. In YAML, any label title, username or ID can be used.
 
 ### Contributing
 **Note** I am considering committing this to become a core home assistant integration but using HACS as a quicker to market solution.
