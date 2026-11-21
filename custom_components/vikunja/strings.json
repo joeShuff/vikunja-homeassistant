@@ -110,6 +110,30 @@
         "priority": {
           "name": "Priority",
           "description": "New priority of the task."
+        },
+        "labels": {
+          "name": "Labels",
+          "description": "Replaces all labels of the task with these existing Vikunja labels (title or ID). An empty list removes all labels."
+        },
+        "add_labels": {
+          "name": "Add labels",
+          "description": "Existing Vikunja labels (title or ID) to add to the task."
+        },
+        "remove_labels": {
+          "name": "Remove labels",
+          "description": "Vikunja labels (title or ID) to remove from the task."
+        },
+        "assignees": {
+          "name": "Assignees",
+          "description": "Replaces all assignees of the task with these Vikunja users (username, display name or user ID). An empty list removes all assignees."
+        },
+        "add_assignees": {
+          "name": "Add assignees",
+          "description": "Vikunja users (username, display name or user ID) to assign. They need access to the project."
+        },
+        "remove_assignees": {
+          "name": "Remove assignees",
+          "description": "Vikunja users (username, display name or user ID) to unassign."
         }
       }
     }

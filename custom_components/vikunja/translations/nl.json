@@ -110,6 +110,30 @@
         "priority": {
           "name": "Prioriteit",
           "description": "Nieuwe prioriteit van de taak."
+        },
+        "labels": {
+          "name": "Labels",
+          "description": "Vervangt alle labels van de taak door deze bestaande Vikunja-labels (titel of ID). Een lege lijst verwijdert alle labels."
+        },
+        "add_labels": {
+          "name": "Labels toevoegen",
+          "description": "Bestaande Vikunja-labels (titel of ID) om aan de taak toe te voegen."
+        },
+        "remove_labels": {
+          "name": "Labels verwijderen",
+          "description": "Vikunja-labels (titel of ID) om van de taak te verwijderen."
+        },
+        "assignees": {
+          "name": "Toegewezen aan",
+          "description": "Vervangt alle toegewezen personen van de taak door deze Vikunja-gebruikers (gebruikersnaam, weergavenaam of gebruikers-ID). Een lege lijst verwijdert alle toegewezen personen."
+        },
+        "add_assignees": {
+          "name": "Toewijzen aan",
+          "description": "Vikunja-gebruikers (gebruikersnaam, weergavenaam of gebruikers-ID) om toe te wijzen. Ze hebben toegang tot het project nodig."
+        },
+        "remove_assignees": {
+          "name": "Toewijzing verwijderen",
+          "description": "Vikunja-gebruikers (gebruikersnaam, weergavenaam of gebruikers-ID) van wie de toewijzing wordt verwijderd."
         }
       }
     }

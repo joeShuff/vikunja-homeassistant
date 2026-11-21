@@ -110,6 +110,30 @@
         "priority": {
           "name": "Priorität",
           "description": "Neue Priorität der Aufgabe."
+        },
+        "labels": {
+          "name": "Labels",
+          "description": "Ersetzt alle Labels der Aufgabe durch diese vorhandenen Vikunja-Labels (Titel oder ID). Eine leere Liste entfernt alle Labels."
+        },
+        "add_labels": {
+          "name": "Labels hinzufügen",
+          "description": "Vorhandene Vikunja-Labels (Titel oder ID), die der Aufgabe hinzugefügt werden."
+        },
+        "remove_labels": {
+          "name": "Labels entfernen",
+          "description": "Vikunja-Labels (Titel oder ID), die von der Aufgabe entfernt werden."
+        },
+        "assignees": {
+          "name": "Zuständige",
+          "description": "Ersetzt alle Zuständigen der Aufgabe durch diese Vikunja-Benutzer (Benutzername, Anzeigename oder Benutzer-ID). Eine leere Liste entfernt alle Zuständigen."
+        },
+        "add_assignees": {
+          "name": "Zuständige hinzufügen",
+          "description": "Vikunja-Benutzer (Benutzername, Anzeigename oder Benutzer-ID), die zugewiesen werden. Sie brauchen Zugriff auf das Projekt."
+        },
+        "remove_assignees": {
+          "name": "Zuständige entfernen",
+          "description": "Vikunja-Benutzer (Benutzername, Anzeigename oder Benutzer-ID), deren Zuweisung entfernt wird."
         }
       }
     }

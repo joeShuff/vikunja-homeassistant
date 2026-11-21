@@ -1,5 +1,6 @@
+from collections.abc import Awaitable, Callable
 from datetime import datetime, date, timezone
-from typing import cast, Optional
+from typing import Any, cast, Optional
 
 import homeassistant.helpers.config_validation as cv
 import homeassistant.util.dt as dt
@@ -19,12 +20,16 @@ from pyvikunja.models.task import Task
 from custom_components.vikunja import VikunjaDataUpdateCoordinator, DOMAIN, LOGGER
 from custom_components.vikunja.assignees import async_resolve_users, user_identifier
 from custom_components.vikunja.const import (
+    ATTR_ADD_ASSIGNEES,
+    ATTR_ADD_LABELS,
     ATTR_ASSIGNEES,
     ATTR_DESCRIPTION,
     ATTR_DUE_DATETIME,
     ATTR_ITEM,
     ATTR_LABELS,
     ATTR_PRIORITY,
+    ATTR_REMOVE_ASSIGNEES,
+    ATTR_REMOVE_LABELS,
     ATTR_RENAME,
     ATTR_TITLE,
     DATA_PROJECTS_KEY,
@@ -36,18 +41,38 @@ from custom_components.vikunja.labels import async_resolve_labels
 
 _TITLE = vol.All(cv.string, vol.Length(min=1, max=250))
 _PRIORITY = vol.In([priority.name.lower() for priority in Priority])
+_STRING_LIST = vol.All(cv.ensure_list, [cv.string])
 
 CREATE_TASK_SCHEMA = {
     vol.Required(ATTR_TITLE): _TITLE,
     vol.Optional(ATTR_DESCRIPTION): cv.string,
     vol.Optional(ATTR_DUE_DATETIME): cv.datetime,
     vol.Optional(ATTR_PRIORITY): _PRIORITY,
-    vol.Optional(ATTR_LABELS): vol.All(cv.ensure_list, [cv.string]),
-    vol.Optional(ATTR_ASSIGNEES): vol.All(cv.ensure_list, [cv.string]),
+    vol.Optional(ATTR_LABELS): _STRING_LIST,
+    vol.Optional(ATTR_ASSIGNEES): _STRING_LIST,
 }
 
 # Fields of update_task that change the task; at least one of them is required
-UPDATE_TASK_CHANGES = (ATTR_RENAME, ATTR_DESCRIPTION, ATTR_DUE_DATETIME, ATTR_PRIORITY)
+UPDATE_TASK_CHANGES = (
+    ATTR_RENAME, ATTR_DESCRIPTION, ATTR_DUE_DATETIME, ATTR_PRIORITY,
+    ATTR_LABELS, ATTR_ADD_LABELS, ATTR_REMOVE_LABELS,
+    ATTR_ASSIGNEES, ATTR_ADD_ASSIGNEES, ATTR_REMOVE_ASSIGNEES,
+)
+
+# (replace, add, remove): replacing all cannot be combined with adding or removing
+_LIST_CHANGE_FIELDS = (
+    (ATTR_LABELS, ATTR_ADD_LABELS, ATTR_REMOVE_LABELS),
+    (ATTR_ASSIGNEES, ATTR_ADD_ASSIGNEES, ATTR_REMOVE_ASSIGNEES),
+)
+
+
+def _replace_or_add_remove(data: dict) -> dict:
+    """Reject replacing a list together with adding to or removing from it."""
+    for replace, add, remove in _LIST_CHANGE_FIELDS:
+        if replace in data and (add in data or remove in data):
+            raise vol.Invalid(f"'{replace}' replaces all {replace} and cannot be combined with '{add}' or '{remove}'")
+    return data
+
 
 UPDATE_TASK_SCHEMA = vol.All(
     cv.make_entity_service_schema({
@@ -56,9 +81,50 @@ UPDATE_TASK_SCHEMA = vol.All(
         vol.Optional(ATTR_DESCRIPTION): cv.string,
         vol.Optional(ATTR_DUE_DATETIME): cv.datetime,
         vol.Optional(ATTR_PRIORITY): _PRIORITY,
+        vol.Optional(ATTR_LABELS): _STRING_LIST,
+        vol.Optional(ATTR_ADD_LABELS): _STRING_LIST,
+        vol.Optional(ATTR_REMOVE_LABELS): _STRING_LIST,
+        vol.Optional(ATTR_ASSIGNEES): _STRING_LIST,
+        vol.Optional(ATTR_ADD_ASSIGNEES): _STRING_LIST,
+        vol.Optional(ATTR_REMOVE_ASSIGNEES): _STRING_LIST,
     }),
     cv.has_at_least_one_key(*UPDATE_TASK_CHANGES),
+    _replace_or_add_remove,
 )
+
+
+def _check_add_remove_overlap(add: list, remove: list, kind: str, name: Callable[[Any], str]) -> None:
+    """Reject adding and removing the same label or user in one call."""
+    remove_ids = {item.id for item in remove}
+    if overlap := [item for item in add if item.id in remove_ids]:
+        raise ServiceValidationError(
+            f"Cannot add and remove the same {kind} in one call: {', '.join(name(item) for item in overlap)}."
+        )
+
+
+async def _async_change_ids(
+        current_ids: set[int],
+        replace_ids: list[int] | None,
+        add_ids: list[int],
+        remove_ids: list[int],
+        add: Callable[[list[int]], Awaitable[Any]],
+        remove: Callable[[int], Awaitable[Any]],
+        replace: Callable[[list[int]], Awaitable[Any]],
+) -> None:
+    """Replace, or add and remove, IDs on a task, calling the API only for actual changes."""
+    if replace_ids is not None:
+        if set(replace_ids) != current_ids:
+            await replace(replace_ids)
+        return
+
+    missing_ids = [item_id for item_id in add_ids if item_id not in current_ids]
+    if missing_ids:
+        await add(missing_ids)
+
+    # Removing something the task does not have is an error in Vikunja, so skip those
+    for item_id in remove_ids:
+        if item_id in current_ids:
+            await remove(item_id)
 
 
 def _to_vikunja_datetime(value: datetime) -> str:
@@ -313,8 +379,15 @@ class VikunjaTaskTodoListEntity(
             description: str | None = None,
             due_datetime: datetime | None = None,
             priority: str | None = None,
+            labels: list[str] | None = None,
+            add_labels: list[str] | None = None,
+            remove_labels: list[str] | None = None,
+            assignees: list[str] | None = None,
+            add_assignees: list[str] | None = None,
+            remove_assignees: list[str] | None = None,
     ) -> ServiceResponse:
         """Update an existing task. Fields that are not given stay unchanged."""
+        api: VikunjaAPI = self.project.api
         task = self._find_task(item)
 
         data = {}
@@ -327,13 +400,57 @@ class VikunjaTaskTodoListEntity(
         if priority is not None:
             data["priority"] = Priority[priority.upper()].value
 
+        change_labels = any(value is not None for value in (labels, add_labels, remove_labels))
+        change_assignees = any(value is not None for value in (assignees, add_assignees, remove_assignees))
+
         try:
+            # Resolve all names first, so a typo does not leave a half-updated task behind
+            replace_label_ids = None if labels is None else [l.id for l in await async_resolve_labels(api, labels)]
+            labels_to_add = await async_resolve_labels(api, add_labels or [])
+            labels_to_remove = await async_resolve_labels(api, remove_labels or [])
+            _check_add_remove_overlap(labels_to_add, labels_to_remove, "label", lambda label: label.title)
+
+            replace_user_ids = (
+                None if assignees is None else [u.id for u in await async_resolve_users(self.project, assignees)]
+            )
+            users_to_add = await async_resolve_users(self.project, add_assignees or [])
+            users_to_remove = await async_resolve_users(self.project, remove_assignees or [])
+            _check_add_remove_overlap(users_to_add, users_to_remove, "assignee", user_identifier)
+
             # Task.update sends the whole task, so start from fresh data to not
             # overwrite changes made in Vikunja since the last poll
-            task = await self.project.api.get_task(task.id)
-            await task.update(data)
+            task = await api.get_task(task.id)
         except APIError as err:
             raise HomeAssistantError(f"Failed to update Vikunja task {task.id}: {err}") from err
+
+        steps: list[tuple[str, Callable[[], Awaitable[Any]]]] = []
+        if data:
+            steps.append(("details", lambda: task.update(data)))
+        if change_labels:
+            steps.append(("labels", lambda: _async_change_ids(
+                {label.id for label in task.labels},
+                replace_label_ids,
+                [label.id for label in labels_to_add],
+                [label.id for label in labels_to_remove],
+                add=task.add_labels, remove=task.remove_label, replace=task.set_labels,
+            )))
+        if change_assignees:
+            steps.append(("assignees", lambda: _async_change_ids(
+                {user.id for user in task.assignees},
+                replace_user_ids,
+                [user.id for user in users_to_add],
+                [user.id for user in users_to_remove],
+                add=task.add_assignees, remove=task.remove_assignee, replace=task.set_assignees,
+            )))
+
+        done: list[str] = []
+        try:
+            for part, apply in steps:
+                await apply()
+                done.append(part)
+        except APIError as err:
+            already = f" Already updated: {', '.join(done)}." if done else ""
+            raise HomeAssistantError(f"Failed to update the {part} of Vikunja task {task.id}: {err}.{already}") from err
         finally:
             await self._coordinator.async_request_refresh()
 

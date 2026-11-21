@@ -73,3 +73,33 @@ update_task:
             - high
             - urgent
             - do_it_now
+    labels:
+      example: "Garden"
+      selector:
+        text:
+          multiple: true
+    add_labels:
+      example: "Urgent"
+      selector:
+        text:
+          multiple: true
+    remove_labels:
+      example: "Household"
+      selector:
+        text:
+          multiple: true
+    assignees:
+      example: "anna"
+      selector:
+        text:
+          multiple: true
+    add_assignees:
+      example: "anna"
+      selector:
+        text:
+          multiple: true
+    remove_assignees:
+      example: "owner"
+      selector:
+        text:
+          multiple: true

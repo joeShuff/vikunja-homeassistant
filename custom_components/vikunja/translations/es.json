@@ -110,6 +110,30 @@
         "priority": {
           "name": "Prioridad",
           "description": "Nueva prioridad de la tarea."
+        },
+        "labels": {
+          "name": "Etiquetas",
+          "description": "Reemplaza todas las etiquetas de la tarea por estas etiquetas de Vikunja existentes (título o ID). Una lista vacía quita todas las etiquetas."
+        },
+        "add_labels": {
+          "name": "Añadir etiquetas",
+          "description": "Etiquetas de Vikunja existentes (título o ID) que se añaden a la tarea."
+        },
+        "remove_labels": {
+          "name": "Quitar etiquetas",
+          "description": "Etiquetas de Vikunja (título o ID) que se quitan de la tarea."
+        },
+        "assignees": {
+          "name": "Responsables",
+          "description": "Reemplaza todos los responsables de la tarea por estos usuarios de Vikunja (nombre de usuario, nombre visible o ID). Una lista vacía quita todos los responsables."
+        },
+        "add_assignees": {
+          "name": "Añadir responsables",
+          "description": "Usuarios de Vikunja (nombre de usuario, nombre visible o ID) que se asignan. Necesitan acceso al proyecto."
+        },
+        "remove_assignees": {
+          "name": "Quitar responsables",
+          "description": "Usuarios de Vikunja (nombre de usuario, nombre visible o ID) cuya asignación se quita."
         }
       }
     }
