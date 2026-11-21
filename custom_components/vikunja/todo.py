@@ -105,10 +105,10 @@ REMOVE_TASK_SCHEMA = {
 }
 
 
-def _check_add_remove_overlap(add: list, remove: list, kind: str, name: Callable[[Any], str]) -> None:
+def _check_add_remove_overlap(add: list | None, remove: list | None, kind: str, name: Callable[[Any], str]) -> None:
     """Reject adding and removing the same label or user in one call."""
-    remove_ids = {item.id for item in remove}
-    if overlap := [item for item in add if item.id in remove_ids]:
+    remove_ids = {item.id for item in remove or []}
+    if overlap := [item for item in add or [] if item.id in remove_ids]:
         raise ServiceValidationError(
             f"Cannot add and remove the same {kind} in one call: {', '.join(name(item) for item in overlap)}."
         )
@@ -374,8 +374,8 @@ class VikunjaTaskTodoListEntity(
 
         try:
             # Resolve labels and users first, so a typo does not leave a half-configured task behind
-            task_labels = await async_resolve_labels(self.project.api, labels or [])
-            users = await async_resolve_users(self.project, assignees or [])
+            (task_labels,) = await async_resolve_labels(self.project.api, labels)
+            (users,) = await async_resolve_users(self.project, assignees)
 
             # Unlike labels, Vikunja accepts assignees on create
             if users:
@@ -433,16 +433,14 @@ class VikunjaTaskTodoListEntity(
 
         try:
             # Resolve all names first, so a typo does not leave a half-updated task behind
-            replace_label_ids = None if labels is None else [l.id for l in await async_resolve_labels(api, labels)]
-            labels_to_add = await async_resolve_labels(api, add_labels or [])
-            labels_to_remove = await async_resolve_labels(api, remove_labels or [])
+            replace_labels, labels_to_add, labels_to_remove = await async_resolve_labels(
+                api, labels, add_labels, remove_labels
+            )
             _check_add_remove_overlap(labels_to_add, labels_to_remove, "label", lambda label: label.title)
 
-            replace_user_ids = (
-                None if assignees is None else [u.id for u in await async_resolve_users(self.project, assignees)]
+            replace_users, users_to_add, users_to_remove = await async_resolve_users(
+                self.project, assignees, add_assignees, remove_assignees
             )
-            users_to_add = await async_resolve_users(self.project, add_assignees or [])
-            users_to_remove = await async_resolve_users(self.project, remove_assignees or [])
             _check_add_remove_overlap(users_to_add, users_to_remove, "assignee", user_identifier)
 
             # Task.update sends the whole task, so start from fresh data to not
@@ -457,17 +455,17 @@ class VikunjaTaskTodoListEntity(
         if change_labels:
             steps.append(("labels", lambda: _async_change_ids(
                 {label.id for label in task.labels},
-                replace_label_ids,
-                [label.id for label in labels_to_add],
-                [label.id for label in labels_to_remove],
+                None if replace_labels is None else [label.id for label in replace_labels],
+                [label.id for label in labels_to_add or []],
+                [label.id for label in labels_to_remove or []],
                 add=task.add_labels, remove=task.remove_label, replace=task.set_labels,
             )))
         if change_assignees:
             steps.append(("assignees", lambda: _async_change_ids(
                 {user.id for user in task.assignees},
-                replace_user_ids,
-                [user.id for user in users_to_add],
-                [user.id for user in users_to_remove],
+                None if replace_users is None else [user.id for user in replace_users],
+                [user.id for user in users_to_add or []],
+                [user.id for user in users_to_remove or []],
                 add=task.add_assignees, remove=task.remove_assignee, replace=task.set_assignees,
             )))
 

@@ -6,39 +6,46 @@ from pyvikunja.api import VikunjaAPI
 from pyvikunja.models.label import Label
 
 
-async def async_resolve_labels(api: VikunjaAPI, identifiers: list[str]) -> list[Label]:
-    """Resolve label titles (case-insensitive) or label IDs into existing Vikunja labels.
+async def async_resolve_labels(api: VikunjaAPI, *identifier_lists: list[str] | None) -> list[list[Label] | None]:
+    """Resolve lists of label titles (case-insensitive) or label IDs into existing Vikunja labels.
 
+    Returns one list of labels per given list. A list that is None stays None, so "not given"
+    can be told apart from "empty". The labels are fetched from Vikunja at most once.
     Raises ServiceValidationError for unknown labels and for titles shared by several labels.
     """
-    identifiers = [str(identifier).strip() for identifier in identifiers]
-    identifiers = [identifier for identifier in identifiers if identifier]
-    if not identifiers:
-        return []
+    cleaned = [_clean(identifiers) for identifiers in identifier_lists]
+    available = await api.get_labels() if any(cleaned) else []
 
-    available = await api.get_labels()
-    resolved: dict[int, Label] = {}
+    return [
+        None if identifiers is None
+        else list({label.id: label for label in (_find_label(i, available) for i in identifiers)}.values())
+        for identifiers in cleaned
+    ]
 
-    for identifier in identifiers:
-        label = None
 
-        if identifier.isdigit():
-            label = next((l for l in available if l.id == int(identifier)), None)
+def _clean(identifiers: list[str] | None) -> list[str] | None:
+    """Strip the identifiers and drop empty ones; None stays None."""
+    if identifiers is None:
+        return None
+    return [identifier for identifier in (str(i).strip() for i in identifiers) if identifier]
 
-        if label is None:
-            matches = [l for l in available if l.title.casefold() == identifier.casefold()]
-            if len(matches) > 1:
-                raise ServiceValidationError(
-                    f"Several Vikunja labels are named '{identifier}' "
-                    f"(IDs: {', '.join(str(l.id) for l in matches)}). Use the label ID instead."
-                )
-            label = matches[0] if matches else None
 
-        if label is None:
-            titles = sorted({l.title for l in available}, key=lambda title: (title.casefold(), title))
-            known = ", ".join(titles) or "none"
-            raise ServiceValidationError(f"Unknown Vikunja label '{identifier}'. Available labels: {known}.")
+def _find_label(identifier: str, available: list[Label]) -> Label:
+    """Find a label by ID, or else by title (case-insensitive)."""
+    if identifier.isdigit():
+        label = next((l for l in available if l.id == int(identifier)), None)
+        if label is not None:
+            return label
 
-        resolved[label.id] = label
-
-    return list(resolved.values())
+    matches = [l for l in available if l.title.casefold() == identifier.casefold()]
+    if len(matches) > 1:
+        raise ServiceValidationError(
+            f"Several Vikunja labels are named '{identifier}' "
+            f"(IDs: {', '.join(str(l.id) for l in matches)}). Use the label ID instead."
+        )
+    if not matches:
+        titles = sorted({l.title for l in available}, key=lambda title: (title.casefold(), title))
+        raise ServiceValidationError(
+            f"Unknown Vikunja label '{identifier}'. Available labels: {', '.join(titles) or 'none'}."
+        )
+    return matches[0]

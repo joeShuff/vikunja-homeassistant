@@ -11,47 +11,55 @@ def user_identifier(user: User) -> str:
     return user.username or str(user.id)
 
 
-async def async_resolve_users(project: Project, identifiers: list[str]) -> list[User]:
-    """Resolve user IDs, usernames or display names (case-insensitive) into users of the project.
+async def async_resolve_users(project: Project, *identifier_lists: list[str] | None) -> list[list[User] | None]:
+    """Resolve lists of user IDs, usernames or display names (case-insensitive) into users of the project.
 
     Only users with access to the project can be assigned in Vikunja, so the project
     users (including owners and team members) are the candidates.
+    Returns one list of users per given list. A list that is None stays None, so "not given"
+    can be told apart from "empty". The project users are fetched from Vikunja at most once.
     Raises ServiceValidationError for unknown users and ambiguous display names.
     """
-    identifiers = [str(identifier).strip() for identifier in identifiers]
-    identifiers = [identifier for identifier in identifiers if identifier]
-    if not identifiers:
-        return []
+    cleaned = [_clean(identifiers) for identifiers in identifier_lists]
+    candidates = await project.get_users() if any(cleaned) else []
 
-    candidates = await project.get_users()
-    resolved: dict[int, User] = {}
+    return [
+        None if identifiers is None
+        else list({user.id: user for user in (_find_user(i, candidates, project) for i in identifiers)}.values())
+        for identifiers in cleaned
+    ]
 
-    for identifier in identifiers:
-        folded = identifier.casefold()
-        user = None
 
-        if identifier.isdigit():
-            user = next((u for u in candidates if u.id == int(identifier)), None)
+def _clean(identifiers: list[str] | None) -> list[str] | None:
+    """Strip the identifiers and drop empty ones; None stays None."""
+    if identifiers is None:
+        return None
+    return [identifier for identifier in (str(i).strip() for i in identifiers) if identifier]
 
-        if user is None:
-            user = next((u for u in candidates if u.username and u.username.casefold() == folded), None)
 
-        if user is None:
-            matches = [u for u in candidates if u.name and u.name.casefold() == folded]
-            if len(matches) > 1:
-                raise ServiceValidationError(
-                    f"Several Vikunja users are named '{identifier}' "
-                    f"({', '.join(sorted(user_identifier(u) for u in matches))}). Use the username instead."
-                )
-            user = matches[0] if matches else None
+def _find_user(identifier: str, candidates: list[User], project: Project) -> User:
+    """Find a user by ID, else by username, else by display name (case-insensitive)."""
+    folded = identifier.casefold()
 
-        if user is None:
-            known = ", ".join(sorted((user_identifier(u) for u in candidates), key=lambda n: (n.casefold(), n)))
-            raise ServiceValidationError(
-                f"Unknown Vikunja user '{identifier}', or the user has no access to the project "
-                f"'{project.title}'. Users with access: {known or 'none'}."
-            )
+    if identifier.isdigit():
+        user = next((u for u in candidates if u.id == int(identifier)), None)
+        if user is not None:
+            return user
 
-        resolved[user.id] = user
+    user = next((u for u in candidates if u.username and u.username.casefold() == folded), None)
+    if user is not None:
+        return user
 
-    return list(resolved.values())
+    matches = [u for u in candidates if u.name and u.name.casefold() == folded]
+    if len(matches) > 1:
+        raise ServiceValidationError(
+            f"Several Vikunja users are named '{identifier}' "
+            f"({', '.join(sorted(user_identifier(u) for u in matches))}). Use the username instead."
+        )
+    if not matches:
+        known = sorted((user_identifier(u) for u in candidates), key=lambda name: (name.casefold(), name))
+        raise ServiceValidationError(
+            f"Unknown Vikunja user '{identifier}', or the user has no access to the project "
+            f"'{project.title}'. Users with access: {', '.join(known) or 'none'}."
+        )
+    return matches[0]
