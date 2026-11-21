@@ -80,6 +80,10 @@
         "labels": {
           "name": "Etiquetas",
           "description": "Etiquetas de Vikunja existentes (título o ID) que se añaden a la tarea."
+        },
+        "assignees": {
+          "name": "Responsables",
+          "description": "Usuarios de Vikunja (nombre de usuario, nombre visible o ID) que se asignan. Necesitan acceso al proyecto."
         }
       }
     }

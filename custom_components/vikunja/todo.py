@@ -17,7 +17,9 @@ from pyvikunja.models.project import Project
 from pyvikunja.models.task import Task
 
 from custom_components.vikunja import VikunjaDataUpdateCoordinator, DOMAIN, LOGGER
+from custom_components.vikunja.assignees import async_resolve_users, user_identifier
 from custom_components.vikunja.const import (
+    ATTR_ASSIGNEES,
     ATTR_DESCRIPTION,
     ATTR_DUE_DATETIME,
     ATTR_LABELS,
@@ -35,6 +37,7 @@ CREATE_TASK_SCHEMA = {
     vol.Optional(ATTR_DUE_DATETIME): cv.datetime,
     vol.Optional(ATTR_PRIORITY): vol.In([priority.name.lower() for priority in Priority]),
     vol.Optional(ATTR_LABELS): vol.All(cv.ensure_list, [cv.string]),
+    vol.Optional(ATTR_ASSIGNEES): vol.All(cv.ensure_list, [cv.string]),
 }
 
 
@@ -208,6 +211,7 @@ class VikunjaTaskTodoListEntity(
             "project_id": self._project_id,
             "url": f"{self._base_url}/tasks/{task.id}",
             "labels": [label.title for label in task.labels],
+            "assignees": [user_identifier(user) for user in task.assignees],
         }
 
     async def async_service_create_task(
@@ -217,6 +221,7 @@ class VikunjaTaskTodoListEntity(
             due_datetime: datetime | None = None,
             priority: str | None = None,
             labels: list[str] | None = None,
+            assignees: list[str] | None = None,
     ) -> ServiceResponse:
         """Create a task with Vikunja specific fields."""
         data = {"title": title, "done": False}
@@ -228,8 +233,13 @@ class VikunjaTaskTodoListEntity(
             data["priority"] = Priority[priority.upper()].value
 
         try:
-            # Resolve labels first, so a typo does not leave a half-configured task behind
+            # Resolve labels and users first, so a typo does not leave a half-configured task behind
             task_labels = await async_resolve_labels(self.project.api, labels or [])
+            users = await async_resolve_users(self.project, assignees or [])
+
+            # Unlike labels, Vikunja accepts assignees on create
+            if users:
+                data["assignees"] = [{"id": user.id} for user in users]
 
             task = await self.project.create_task(data)
         except APIError as err:

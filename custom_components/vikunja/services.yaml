@@ -33,3 +33,8 @@ create_task:
       selector:
         text:
           multiple: true
+    assignees:
+      example: "anna"
+      selector:
+        text:
+          multiple: true

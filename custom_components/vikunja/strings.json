@@ -80,6 +80,10 @@
         "labels": {
           "name": "Labels",
           "description": "Existing Vikunja labels (title or ID) to add to the task."
+        },
+        "assignees": {
+          "name": "Assignees",
+          "description": "Vikunja users (username, display name or user ID) to assign. They need access to the project."
         }
       }
     }

@@ -80,6 +80,10 @@
         "labels": {
           "name": "Labels",
           "description": "Vorhandene Vikunja-Labels (Titel oder ID), die der Aufgabe hinzugefügt werden."
+        },
+        "assignees": {
+          "name": "Zuständige",
+          "description": "Vikunja-Benutzer (Benutzername, Anzeigename oder Benutzer-ID), die zugewiesen werden. Sie brauchen Zugriff auf das Projekt."
         }
       }
     }

@@ -22,6 +22,7 @@ ATTR_DESCRIPTION = "description"
 ATTR_DUE_DATETIME = "due_datetime"
 ATTR_PRIORITY = "priority"
 ATTR_LABELS = "labels"
+ATTR_ASSIGNEES = "assignees"
 
 DATA_PROJECTS_KEY = "projects"
 DATA_TASKS_KEY = "tasks"

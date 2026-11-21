@@ -80,6 +80,10 @@
         "labels": {
           "name": "Labels",
           "description": "Bestaande Vikunja-labels (titel of ID) om aan de taak toe te voegen."
+        },
+        "assignees": {
+          "name": "Toegewezen aan",
+          "description": "Vikunja-gebruikers (gebruikersnaam, weergavenaam of gebruikers-ID) om toe te wijzen. Ze hebben toegang tot het project nodig."
         }
       }
     }
