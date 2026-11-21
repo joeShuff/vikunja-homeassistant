@@ -38,6 +38,12 @@ from custom_components.vikunja.const import (
     SERVICE_UPDATE_TASK,
 )
 from custom_components.vikunja.labels import async_resolve_labels
+from custom_components.vikunja.selectors import (
+    DATA_SELECTOR_LABELS,
+    DATA_SELECTOR_USERS,
+    async_load_selector_data,
+    async_update_action_selectors,
+)
 
 _TITLE = vol.All(cv.string, vol.Length(min=1, max=250))
 _PRIORITY = vol.In([priority.name.lower() for priority in Priority])
@@ -162,6 +168,16 @@ async def async_setup_entry(
 
     ## Filter projects to all that aren't ID -1 (that's favourites)
     projects: list[Project] = [proj for proj in coordinator.data[DATA_PROJECTS_KEY].values() if proj.id != -1]
+
+    # Offer the known users and labels as dropdowns in the action fields.
+    # Loaded in the background, so the extra requests do not delay the setup.
+    async def async_update_selectors() -> None:
+        users, labels = await async_load_selector_data(vikunja_api, projects)
+        vikunja_data[DATA_SELECTOR_USERS] = users
+        vikunja_data[DATA_SELECTOR_LABELS] = labels
+        await async_update_action_selectors(hass)
+
+    entry.async_create_background_task(hass, async_update_selectors(), "vikunja_action_selectors")
 
     async_add_entities(
         (
