@@ -55,5 +55,108 @@
     "error": {
       "no_projects_selected": "Por favor selecciona al menos un proyecto para sincronizar."
     }
+  },
+  "services": {
+    "create_task": {
+      "name": "Crear tarea",
+      "description": "Crea una tarea en el proyecto de Vikunja de la lista de tareas seleccionada.",
+      "fields": {
+        "title": {
+          "name": "Título",
+          "description": "Título de la nueva tarea."
+        },
+        "description": {
+          "name": "Descripción",
+          "description": "Descripción de la tarea."
+        },
+        "due_datetime": {
+          "name": "Fecha y hora de vencimiento",
+          "description": "Cuándo vence la tarea."
+        },
+        "priority": {
+          "name": "Prioridad",
+          "description": "Prioridad de la tarea."
+        },
+        "labels": {
+          "name": "Etiquetas",
+          "description": "Etiquetas de Vikunja existentes (título o ID) que se añaden a la tarea."
+        },
+        "assignees": {
+          "name": "Responsables",
+          "description": "Usuarios de Vikunja (nombre de usuario, nombre visible o ID) que se asignan. Necesitan acceso al proyecto."
+        }
+      }
+    },
+    "update_task": {
+      "name": "Actualizar tarea",
+      "description": "Actualiza una tarea existente en el proyecto de Vikunja de la lista de tareas seleccionada. Los campos no indicados no cambian.",
+      "fields": {
+        "item": {
+          "name": "Tarea",
+          "description": "Título o ID de la tarea en la lista de tareas seleccionada."
+        },
+        "rename": {
+          "name": "Renombrar",
+          "description": "Nuevo título de la tarea."
+        },
+        "description": {
+          "name": "Descripción",
+          "description": "Nueva descripción de la tarea."
+        },
+        "due_datetime": {
+          "name": "Fecha y hora de vencimiento",
+          "description": "Nueva fecha y hora de vencimiento de la tarea."
+        },
+        "priority": {
+          "name": "Prioridad",
+          "description": "Nueva prioridad de la tarea."
+        },
+        "labels": {
+          "name": "Etiquetas",
+          "description": "Reemplaza todas las etiquetas de la tarea por estas etiquetas de Vikunja existentes (título o ID). Una lista vacía quita todas las etiquetas."
+        },
+        "add_labels": {
+          "name": "Añadir etiquetas",
+          "description": "Etiquetas de Vikunja existentes (título o ID) que se añaden a la tarea."
+        },
+        "remove_labels": {
+          "name": "Quitar etiquetas",
+          "description": "Etiquetas de Vikunja (título o ID) que se quitan de la tarea."
+        },
+        "assignees": {
+          "name": "Responsables",
+          "description": "Reemplaza todos los responsables de la tarea por estos usuarios de Vikunja (nombre de usuario, nombre visible o ID). Una lista vacía quita todos los responsables."
+        },
+        "add_assignees": {
+          "name": "Añadir responsables",
+          "description": "Usuarios de Vikunja (nombre de usuario, nombre visible o ID) que se asignan. Necesitan acceso al proyecto."
+        },
+        "remove_assignees": {
+          "name": "Quitar responsables",
+          "description": "Usuarios de Vikunja (nombre de usuario, nombre visible o ID) cuya asignación se quita."
+        }
+      }
+    },
+    "remove_task": {
+      "name": "Eliminar tarea",
+      "description": "Elimina una tarea existente del proyecto de Vikunja de la lista de tareas seleccionada.",
+      "fields": {
+        "item": {
+          "name": "Tarea",
+          "description": "Título o ID de la tarea en la lista de tareas seleccionada."
+        }
+      }
+    }
+  },
+  "selector": {
+    "priority": {
+      "options": {
+        "low": "Baja",
+        "medium": "Media",
+        "high": "Alta",
+        "urgent": "Urgente",
+        "do_it_now": "Hacer ahora"
+      }
+    }
   }
 }

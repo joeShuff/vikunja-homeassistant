@@ -55,5 +55,108 @@
     "error": {
       "no_projects_selected": "Selecteer alstublieft ten minste één project om te synchroniseren."
     }
+  },
+  "services": {
+    "create_task": {
+      "name": "Taak aanmaken",
+      "description": "Maakt een taak aan in het Vikunja-project van de geselecteerde takenlijst.",
+      "fields": {
+        "title": {
+          "name": "Titel",
+          "description": "Titel van de nieuwe taak."
+        },
+        "description": {
+          "name": "Beschrijving",
+          "description": "Beschrijving van de taak."
+        },
+        "due_datetime": {
+          "name": "Vervaldatum en -tijd",
+          "description": "Wanneer de taak vervalt."
+        },
+        "priority": {
+          "name": "Prioriteit",
+          "description": "Prioriteit van de taak."
+        },
+        "labels": {
+          "name": "Labels",
+          "description": "Bestaande Vikunja-labels (titel of ID) om aan de taak toe te voegen."
+        },
+        "assignees": {
+          "name": "Toegewezen aan",
+          "description": "Vikunja-gebruikers (gebruikersnaam, weergavenaam of gebruikers-ID) om toe te wijzen. Ze hebben toegang tot het project nodig."
+        }
+      }
+    },
+    "update_task": {
+      "name": "Taak bijwerken",
+      "description": "Werkt een bestaande taak bij in het Vikunja-project van de geselecteerde takenlijst. Velden die niet zijn opgegeven, blijven ongewijzigd.",
+      "fields": {
+        "item": {
+          "name": "Taak",
+          "description": "Titel of ID van de taak in de geselecteerde takenlijst."
+        },
+        "rename": {
+          "name": "Hernoemen",
+          "description": "Nieuwe titel van de taak."
+        },
+        "description": {
+          "name": "Beschrijving",
+          "description": "Nieuwe beschrijving van de taak."
+        },
+        "due_datetime": {
+          "name": "Vervaldatum en -tijd",
+          "description": "Nieuwe vervaldatum en -tijd van de taak."
+        },
+        "priority": {
+          "name": "Prioriteit",
+          "description": "Nieuwe prioriteit van de taak."
+        },
+        "labels": {
+          "name": "Labels",
+          "description": "Vervangt alle labels van de taak door deze bestaande Vikunja-labels (titel of ID). Een lege lijst verwijdert alle labels."
+        },
+        "add_labels": {
+          "name": "Labels toevoegen",
+          "description": "Bestaande Vikunja-labels (titel of ID) om aan de taak toe te voegen."
+        },
+        "remove_labels": {
+          "name": "Labels verwijderen",
+          "description": "Vikunja-labels (titel of ID) om van de taak te verwijderen."
+        },
+        "assignees": {
+          "name": "Toegewezen aan",
+          "description": "Vervangt alle toegewezen personen van de taak door deze Vikunja-gebruikers (gebruikersnaam, weergavenaam of gebruikers-ID). Een lege lijst verwijdert alle toegewezen personen."
+        },
+        "add_assignees": {
+          "name": "Toewijzen aan",
+          "description": "Vikunja-gebruikers (gebruikersnaam, weergavenaam of gebruikers-ID) om toe te wijzen. Ze hebben toegang tot het project nodig."
+        },
+        "remove_assignees": {
+          "name": "Toewijzing verwijderen",
+          "description": "Vikunja-gebruikers (gebruikersnaam, weergavenaam of gebruikers-ID) van wie de toewijzing wordt verwijderd."
+        }
+      }
+    },
+    "remove_task": {
+      "name": "Taak verwijderen",
+      "description": "Verwijdert een bestaande taak uit het Vikunja-project van de geselecteerde takenlijst.",
+      "fields": {
+        "item": {
+          "name": "Taak",
+          "description": "Titel of ID van de taak in de geselecteerde takenlijst."
+        }
+      }
+    }
+  },
+  "selector": {
+    "priority": {
+      "options": {
+        "low": "Laag",
+        "medium": "Gemiddeld",
+        "high": "Hoog",
+        "urgent": "Urgent",
+        "do_it_now": "Nu doen"
+      }
+    }
   }
 }

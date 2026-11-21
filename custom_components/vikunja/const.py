@@ -14,6 +14,24 @@ CONF_TASKS_AS_DEVICES = "tasks_as_devices"
 # Special value to indicate all projects should be synced
 CONF_ALL_PROJECTS = "__all__"
 
+# Actions
+SERVICE_CREATE_TASK = "create_task"
+SERVICE_UPDATE_TASK = "update_task"
+SERVICE_REMOVE_TASK = "remove_task"
+
+ATTR_TITLE = "title"
+ATTR_DESCRIPTION = "description"
+ATTR_DUE_DATETIME = "due_datetime"
+ATTR_PRIORITY = "priority"
+ATTR_LABELS = "labels"
+ATTR_ASSIGNEES = "assignees"
+ATTR_ITEM = "item"
+ATTR_RENAME = "rename"
+ATTR_ADD_LABELS = "add_labels"
+ATTR_REMOVE_LABELS = "remove_labels"
+ATTR_ADD_ASSIGNEES = "add_assignees"
+ATTR_REMOVE_ASSIGNEES = "remove_assignees"
+
 DATA_PROJECTS_KEY = "projects"
 DATA_TASKS_KEY = "tasks"
 

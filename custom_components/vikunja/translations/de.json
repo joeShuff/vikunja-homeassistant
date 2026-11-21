@@ -55,5 +55,108 @@
     "error": {
       "no_projects_selected": "Bitte wählen Sie mindestens ein Projekt zum Synchronisieren aus."
     }
+  },
+  "services": {
+    "create_task": {
+      "name": "Aufgabe erstellen",
+      "description": "Erstellt eine Aufgabe im Vikunja-Projekt der ausgewählten To-do-Liste.",
+      "fields": {
+        "title": {
+          "name": "Titel",
+          "description": "Titel der neuen Aufgabe."
+        },
+        "description": {
+          "name": "Beschreibung",
+          "description": "Beschreibung der Aufgabe."
+        },
+        "due_datetime": {
+          "name": "Fälligkeitsdatum und -uhrzeit",
+          "description": "Wann die Aufgabe fällig ist."
+        },
+        "priority": {
+          "name": "Priorität",
+          "description": "Priorität der Aufgabe."
+        },
+        "labels": {
+          "name": "Labels",
+          "description": "Vorhandene Vikunja-Labels (Titel oder ID), die der Aufgabe hinzugefügt werden."
+        },
+        "assignees": {
+          "name": "Zuständige",
+          "description": "Vikunja-Benutzer (Benutzername, Anzeigename oder Benutzer-ID), die zugewiesen werden. Sie brauchen Zugriff auf das Projekt."
+        }
+      }
+    },
+    "update_task": {
+      "name": "Aufgabe aktualisieren",
+      "description": "Aktualisiert eine bestehende Aufgabe im Vikunja-Projekt der ausgewählten To-do-Liste. Nicht angegebene Felder bleiben unverändert.",
+      "fields": {
+        "item": {
+          "name": "Aufgabe",
+          "description": "Titel oder ID der Aufgabe in der ausgewählten To-do-Liste."
+        },
+        "rename": {
+          "name": "Umbenennen",
+          "description": "Neuer Titel der Aufgabe."
+        },
+        "description": {
+          "name": "Beschreibung",
+          "description": "Neue Beschreibung der Aufgabe."
+        },
+        "due_datetime": {
+          "name": "Fälligkeitsdatum und -uhrzeit",
+          "description": "Neues Fälligkeitsdatum und neue Uhrzeit der Aufgabe."
+        },
+        "priority": {
+          "name": "Priorität",
+          "description": "Neue Priorität der Aufgabe."
+        },
+        "labels": {
+          "name": "Labels",
+          "description": "Ersetzt alle Labels der Aufgabe durch diese vorhandenen Vikunja-Labels (Titel oder ID). Eine leere Liste entfernt alle Labels."
+        },
+        "add_labels": {
+          "name": "Labels hinzufügen",
+          "description": "Vorhandene Vikunja-Labels (Titel oder ID), die der Aufgabe hinzugefügt werden."
+        },
+        "remove_labels": {
+          "name": "Labels entfernen",
+          "description": "Vikunja-Labels (Titel oder ID), die von der Aufgabe entfernt werden."
+        },
+        "assignees": {
+          "name": "Zuständige",
+          "description": "Ersetzt alle Zuständigen der Aufgabe durch diese Vikunja-Benutzer (Benutzername, Anzeigename oder Benutzer-ID). Eine leere Liste entfernt alle Zuständigen."
+        },
+        "add_assignees": {
+          "name": "Zuständige hinzufügen",
+          "description": "Vikunja-Benutzer (Benutzername, Anzeigename oder Benutzer-ID), die zugewiesen werden. Sie brauchen Zugriff auf das Projekt."
+        },
+        "remove_assignees": {
+          "name": "Zuständige entfernen",
+          "description": "Vikunja-Benutzer (Benutzername, Anzeigename oder Benutzer-ID), deren Zuweisung entfernt wird."
+        }
+      }
+    },
+    "remove_task": {
+      "name": "Aufgabe entfernen",
+      "description": "Löscht eine bestehende Aufgabe aus dem Vikunja-Projekt der ausgewählten To-do-Liste.",
+      "fields": {
+        "item": {
+          "name": "Aufgabe",
+          "description": "Titel oder ID der Aufgabe in der ausgewählten To-do-Liste."
+        }
+      }
+    }
+  },
+  "selector": {
+    "priority": {
+      "options": {
+        "low": "Niedrig",
+        "medium": "Mittel",
+        "high": "Hoch",
+        "urgent": "Dringend",
+        "do_it_now": "Sofort erledigen"
+      }
+    }
   }
 }
